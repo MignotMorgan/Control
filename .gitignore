@@ -26,3 +26,6 @@ Thumbs.db
 # Caches
 .cache/
 *.tmp
+
+# Legacy
+AncienneVersion/
