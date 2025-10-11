@@ -62,10 +62,7 @@ function onMouseMove(e){
         mousehover.control = mousehover.selected;
     }
 
-    if(dragdrop.active && dragdrop.control){
-        DragDropManager.move();
-    }
-    DragDropManager.maybeActivate();
+    if(!!dragdrop.control){ DragDropManager.move(); }
 
     if(transformation.control == null)
     {
@@ -143,7 +140,7 @@ function onMouseUpLeft(e){
     // Si un drag interne est actif, on délègue le drop au manager
 
         if(dragdrop.active && dragdrop.control){
-            DragDropManager.dropControl(mouse.x, mouse.y);
+            DragDropManager.dropControl();
         }
 
     return false;
@@ -262,35 +259,30 @@ function onWheel(e){
 // Gestionnaire global du drag & drop
 function onDragEnter(e){
     e.preventDefault();
-    // Pendant un drag, mousemove n'est pas toujours émis: on met à jour la position et le hover
-    if (typeof onMouseMove === 'function') onMouseMove(e);
+    onMouseMove(e);
     DragDropManager.dragenter();
 }
 function onDragOver(e){
     e.preventDefault();
-    // Met à jour la position et le contrôle survolé pendant le drag
-    if (typeof onMouseMove === 'function') onMouseMove(e);
+    onMouseMove(e);
     DragDropManager.dragover();
 }
 
 function onDragLeave(e){
     e.preventDefault();
-    // Met à jour la position (facultatif) puis notifie le contrôle courant
-    if (typeof onMouseMove === 'function') onMouseMove(e);
+    onMouseMove(e);
     DragDropManager.dragleave();
 }
 
 function onDrop(e){
     e.preventDefault();
-    // Pendant le drop, mettre à jour la position/hover
-    if (typeof onMouseMove === 'function') onMouseMove(e);
+    onMouseMove(e);
     try{
         if(e.dataTransfer){
             dragdrop.data.text = e.dataTransfer.getData('text') || e.dataTransfer.getData('text/plain') || "";
             dragdrop.data.files = (e.dataTransfer.files && e.dataTransfer.files.length) ? e.dataTransfer.files : null;
         }
-    }catch(err){ /* certains navigateurs restreignent l'accès */ }
-    dragdrop.target = mousehover.control ? mousehover.control : (typeof focus !== 'undefined' ? focus : null);
+    }catch(err){ /* some browsers restrict access */ }
     DragDropManager.drop();
 }
 

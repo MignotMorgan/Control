@@ -294,13 +294,16 @@ class DrawForm extends Draw{
             iy += 20;
             paint.drawText(ix, iy, "souris dans le contrôle : " + (mouse.x - mousehover.control.form.Inside.x - mousehover.control.x) + " : " + (mouse.y - mousehover.control.form.Inside.y - mousehover.control.y));
             iy += 20;
-            paint.drawText(ix, iy, "survol : " + mousehover.control.id + " X: " + mousehover.control.Inside.x + " Y: " + mousehover.control.Inside.y + " largeur: " + mousehover.control.width + " hauteur: " + mousehover.control.height + " parent: " + (mousehover.control.parent === null ? mousehover.control.parent : mousehover.control.parent.id));
+            paint.drawText(ix, iy, "mousehover : " + mousehover.control.id + " X: " + mousehover.control.Inside.x + " Y: " + mousehover.control.Inside.y + " width: " + mousehover.control.width + " height: " + mousehover.control.height + " parent: " + (mousehover.control.parent === null ? "null" : mousehover.control.parent.id));
         }
         iy += 20;
         if(transformation.control != null)
             paint.drawText(ix, iy, "transformation : " + transformation.control.id + " redim: " + transformation.resize + " gauche: " + transformation.left + " haut: " + transformation.top + " droite: " + transformation.right + " bas: " + transformation.bottom);
         else
             paint.drawText(ix, iy, "transformation : null");
+
+        iy += 20;
+        paint.drawText(ix, iy, "armed: " + dragdrop.armed + " active: " + dragdrop.active + " control: " + (dragdrop.control === null ? "null" : dragdrop.control.id) + " parent: " + (dragdrop.parent === null ? "null" : dragdrop.parent.id) + " target: " + (dragdrop.target === null ? "null" : dragdrop.target.id));
         // (HUD drag temporaire retiré)
     }
     drawChildren(paint, x, y)

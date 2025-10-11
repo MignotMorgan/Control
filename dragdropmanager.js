@@ -19,40 +19,27 @@ class DragDropManager {
      la même articulation visuelle pendant le déplacement.
   */
   static start() {
-    const dnd = dragdrop;
-    const control = mousehover.control;
-    dnd.control = control;                 // source du drag
-    dnd.parent = control.parent || null;   // parent d'origine pour restaurations éventuelles
-    dnd.startX = mouse.x;                   // position souris au départ (fenêtre/page)
+    const dnd = dragdrop;                  // état global du cycle DnD
+    const control = mousehover.control;    // contrôle sous la souris au mousedown (source du drag)
+    dnd.control = control;                 // mémorisation de la source
+    dnd.parent = control.parent || null;   // parent d'origine (utile si retour en arrière)
+    dnd.startX = mouse.x;                  // coordonnées souris au déclenchement (repère global)
     dnd.startY = mouse.y
-    // Offset de prise calculé dans le repère de la Form (absolu dans la scène)
+    // Calcul de l'offset de prise dans le repère de la Form:
+    // différence entre la position de la souris et le coin haut-gauche du contrôle au clic.
+    // Cela permet de conserver la même "prise" visuelle pendant tout le drag.
     dnd.offsetX = mouse.x - control.form.Inside.x - control.x;
     dnd.offsetY = mouse.y - control.form.Inside.y - control.y;
-    // Position absolue d'origine (utile en cas d'annulation ou de drop invalide)
+    // Position absolue d'origine de la source (repère Form): sert à restaurer si drop invalide/annulé.
     dnd.srcX = control.x;
     dnd.srcY = control.y;
-    dnd.armed = true;   // armé: prêt à s'activer si le seuil de mouvement est dépassé
-    dnd.active = false; // pas encore actif tant que le seuil n'est pas franchi
+    dnd.armed = true;   // armé: prêt à devenir actif si le déplacement dépasse un seuil
+    dnd.active = false; // inactif tant que le seuil n'est pas franchi
 
+    // Hook de démarrage côté source (pour visuels ou états spécifiques)
     control.Drag.start();
   }
-
-  /*
-   Active le drag quand le seuil de mouvement est dépassé.
-   - Évite d’activer un drag pour de micro-mouvements involontaires.
-   - Une fois actif, on met à jour immédiatement pour un feedback fluide (ghost/position/cible).
-  */
-  static maybeActivate() {
-    const dnd = dragdrop;
-    if(!dnd.armed || dnd.active || !dnd.control) return;
-    const dx = Math.abs(mouse.x - dnd.startX); // déplacement horizontal depuis le départ
-    const dy = Math.abs(mouse.y - dnd.startY); // déplacement vertical depuis le départ
-    // Ici, un seuil pourrait être appliqué (ex: dx+dy >= 6). Pour l’instant, activation immédiate.
-    dnd.active = true; // passe en mode drag actif
-    try { this.move(); } catch(_){ }
-
-  }
-
+  
   /*
    Met à jour la position de feedback et la cible de drop courante.
    - Déplace visuellement la source en respectant l’offset de prise et le repère de la Form.
@@ -62,16 +49,28 @@ class DragDropManager {
   static move() {
     const dnd = dragdrop;
     const control = dnd.control;
-    if(!dnd.active || !control) return;
+
+    // Active le drag quand le seuil de mouvement est dépassé.
+    if (dnd.armed && !dnd.active){
+      const dx = Math.abs(mouse.x - dnd.startX); // delta horizontal depuis le clic
+      const dy = Math.abs(mouse.y - dnd.startY); // delta vertical depuis le clic
+      // Seuil d'activation (anti-jitter): évite de déclencher un drag par un léger tremblement
+      if (dx + dy >= Config.DRAG_ACTIVATION_THRESHOLD){
+        dnd.active = true; // passe en mode drag actif
+      }
+    }
+
+    // Tant que le drag n'est pas actif, ne pas bouger visuellement la source
+    if(!dnd.active){ return; }
+    // Convertit la souris en repère Form puis compense l'offset de prise pour le feedback visuel
     const xForm = mouse.x - control.form.Inside.x - dnd.offsetX;
     const yForm = mouse.y - control.form.Inside.y - dnd.offsetY;
     control.Transformation.Move.to(xForm, yForm); // feedback visuel (position absolue)
-    const hovered = (typeof mousehover !== 'undefined' && mousehover) ? mousehover.control : null;
-    const newTarget = this.computeTarget(hovered);
-    if(newTarget !== dnd.target){
-      const oldTarget = dnd.target; // réservé à des callbacks éventuels (changement de cible)
-      dnd.target = newTarget;       // nouvelle cible courante
-    }
+
+    // Sélection dynamique de la cible via le contrat Drop.target() du contrôle survolé
+    dnd.target = mousehover.control ? mousehover.control.Drop.target() : null;
+
+    // Si la cible est clipée et que la souris est proche des bords, déclencher un auto-défilement
     if(dnd.target && dnd.target.clip){ this.autoScroll(dnd.target, mouse.x, mouse.y); } // auto-scroll si clip
   }
 
@@ -84,77 +83,83 @@ class DragDropManager {
    - Re-parente la source dans la cible et positionne via `Inside`.
    - Restaure sinon la position d’origine.
   */
-  static dropControl(mouseX, mouseY) {
+  static dropControl() {
+    // Récupération de l'état global du DnD et des acteurs
     const dnd = dragdrop;
-    const control = dnd.control;
+    const control = dnd.control; // source en cours de drag
+    let target = dnd.target;     // cible actuelle déduite pendant move()
+
+    // Garde-fous: pas de source => rien à déposer
     if(!control){ this.reset(); return; }
+    // Drag armé mais jamais devenu actif (clic sans mouvement) => annulation propre
     if(dnd.armed && !dnd.active){ this.reset(); return; }
-    let target = dnd.target;
-    if(!target){
-      const hovered = (typeof mousehover !== 'undefined' && mousehover) ? mousehover.control : null;
-      target = this.computeTarget(hovered);
-    }
+    // Note: si vous préférez refuser explicitement target === null, décommentez le guard ci-dessous
+    if(target === null){ this.restore(); return; }
 
-    const isDescendant = (node, potentialAncestor) => {
-      let p = node;
-      while(p){ if(p === potentialAncestor) return true; p = p.parent; }
-      return false;
-    };
-
-    if(target && target !== control && !isDescendant(target, control)){
-      // Conversion en repère de la Form de la cible
-      const mouseFormX = mouseX - target.form.Inside.x;
-      const mouseFormY = mouseY - target.form.Inside.y;
-      // Position «souhaitée» dans le repère de la Form, en respectant l’offset de prise
+      // Validation cumulative: capacité de la cible + veto côté source + veto côté cible
+      let valid = control.Drag.validate(target) && target.Drop.validate(control);
+    // Cible éligible: existe, n'est pas la source et n'est pas un descendant de la source
+    if(valid && target !== control ){
+      // 1) Conversion des coordonnées souris -> repère Form de la cible
+      const mouseFormX = mouse.x - target.form.Inside.x;
+      const mouseFormY = mouse.y - target.form.Inside.y;
+      // 2) Compensation de l'offset de prise pour conserver l'articulation visuelle de la prise
       const desiredFormX = mouseFormX - dnd.offsetX;
       const desiredFormY = mouseFormY - dnd.offsetY;
+      // 3) Passage en coordonnées locales Inside de la cible (soustraction de la position et des bordures)
       const relX = desiredFormX - target.x - target.Border.left;
       const relY = desiredFormY - target.y - target.Border.top;
 
-      // Validation cumulative: capacité de la cible + veto source + veto cible
-      let valid = !!target.canDrop;
-      try { if(control.Drag && typeof control.Drag.validateDrop === 'function') valid = !!control.Drag.validateDrop(target, { localX: relX, localY: relY }); } catch(_){ }
-      try { if(target.Drop && typeof target.Drop.validateDrop === 'function') valid = valid && !!target.Drop.validateDrop(target, { localX: relX, localY: relY }); } catch(_){ }
-
-      if(valid){
-        if(target.clip){ // Contrainte: rester dans la zone intérieure visible
-          const innerW = target.width - target.Border.left - target.Border.right;
-          const innerH = target.height - target.Border.top - target.Border.bottom;
-          const maxX = innerW - control.width;
-          const maxY = innerH - control.height;
-          const inClipX = relX >= 0 && relX <= maxX;
-          const inClipY = relY >= 0 && relY <= maxY;
-          if(!(inClipX && inClipY)){
-            control.Transformation.Move.to(dnd.srcX, dnd.srcY);
-            this.reset();
-            return;
-          }
-        }
-        let relXSnap = relX, relYSnap = relY; // snapping optionnel
-        let grid = null;
-
-        if(typeof grid === 'number' && grid > 0){
-          const snap = (v)=> Math.round(v / grid) * grid;
-          relXSnap = snap(relX);
-          relYSnap = snap(relY);
-        }
+        // Re-parentage: retirer du parent courant avant d'ajouter à la cible
         if(control.parent) control.parent.Lineage.remove(control); // reparentage
-        control.Inside.x = relXSnap;
-        control.Inside.y = relYSnap;
+        // Position finale dans le repère Inside de la cible
+        control.Inside.x = relX;
+        control.Inside.y = relY;
+        // Ajout effectif à la cible
         target.add(control);
-     } else {
-        control.Transformation.Move.to(dnd.srcX, dnd.srcY);
-      }
+
     } else {
+      // Cible manquante ou non éligible: revenir à la position d'origine
       control.Transformation.Move.to(dnd.srcX, dnd.srcY);
     }
+    // Nettoyage systématique de l'état DnD (réussi ou non)
     this.reset();
+  }
+
+   // !!! Placer le scroll verticale et horizontale dans Transformation.Move
+   
+  static autoScroll(container, mouseX, mouseY) {
+    // Ne fonctionne que pour des conteneurs qui rognent (clip) leur contenu
+    if(!container || !container.clip) return;
+    // Dimensions visibles intérieures (Inside) du conteneur: largeur/hauteur utile hors bordures
+    const innerW = container.width - container.Border.left - container.Border.right;
+    const innerH = container.height - container.Border.top - container.Border.bottom;
+    if(innerW <= 0 || innerH <= 0) return; // rien de scrollable si zone non positive
+    // Seuil de proximité des bords (en px) pour déclencher l'auto-scroll
+    const threshold = (typeof Config !== 'undefined' && Config && typeof Config.AUTOSCROLL_THRESHOLD === 'number')
+      ? Config.AUTOSCROLL_THRESHOLD
+      : 20;
+    // Conversion de la souris en coordonnées locales (Inside) du conteneur
+    const localX = mouseX - container.form.Inside.x - container.x - container.Border.left;
+    const localY = mouseY - container.form.Inside.y - container.y - container.Border.top;
+
+    // Vitesses proportionnelles à la proximité des bords
+    let stepV = 0, stepH = 0;
+    if(localY < threshold){ stepV = (threshold - localY) * 0.5; }
+    else if(localY > innerH - threshold){ stepV = -(localY - (innerH - threshold)) * 0.5; }
+    if(localX < threshold){ stepH = (threshold - localX) * 0.5; }
+    else if(localX > innerW - threshold){ stepH = -(localX - (innerW - threshold)) * 0.5; }
+
+    if(stepV === 0 && stepH === 0) return; // pas d'auto-scroll si la souris est au centre
+
+    // Utilise la fonction centrale de scroll du Move pour appliquer bornes/clamps et propagation
+    container.Transformation.Move.scroll(stepV, stepH);
   }
 
   /*
    Annule le drag en cours et restaure la position d’origine du contrôle source.
   */
-  static cancel() {
+   static restore() {
     const dnd = dragdrop;
     const control = dnd.control;
     if(!control){ this.reset(); return; }
@@ -163,102 +168,47 @@ class DragDropManager {
   }
 
   /*
-   Détermine la meilleure cible de drop à partir d’un contrôle survolé.
-   - Remonte la hiérarchie tant qu’un ancêtre n’accepte pas le drop (canDrop).
-   - Exclut la source et ses descendants (évite les cycles).
-   - Applique un veto cible optionnel via `Drop.validateDropCandidate(source)`.
-  */
-  static computeTarget(hovered) {
-    const dnd = dragdrop;
-    const control = dnd.control;
-    if(!hovered) return null;
-    let candidate = hovered;
-    const isDescendant = (node, potentialAncestor) => {
-      let p = node;
-      while(p){ if(p === potentialAncestor) return true; p = p.parent; }
-      return false;
-    };
-    while(candidate && !candidate.canDrop) candidate = candidate.parent;
-    if(!candidate) return null;
-    if(control && (candidate === control || isDescendant(candidate, control))) return null;
-    try { if(candidate.Drop && typeof candidate.Drop.validateDropCandidate === 'function'){
-      if(!candidate.Drop.validateDropCandidate(control)) return null;
-    } } catch(_){ }
-    return candidate;
-  }
-
-  /*
-   Auto-défilement vertical d’un conteneur clipé lorsque la souris frôle le haut/bas.
-   - Convertit la souris en coordonnées locales (dans la zone intérieure utile).
-   - Fait défiler un enfant de contenu si celui-ci dépasse la hauteur visible.
-   - Applique des bornes pour ne pas défiler au-delà des limites.
-  */
-  static autoScroll(container, mouseX, mouseY) {
-    if(!container || !container.clip) return;
-    const innerW = container.width - container.Border.left - container.Border.right;
-    const innerH = container.height - container.Border.top - container.Border.bottom;
-    if(innerW <= 0 || innerH <= 0) return;
-    // Seuil en pixels à partir du bord pour déclencher l'auto-défilement
-    const threshold = (typeof Config !== 'undefined' && Config && typeof Config.AUTO_SCROLL_THRESHOLD === 'number')
-      ? Config.AUTO_SCROLL_THRESHOLD
-      : 20;
-    const localX = mouseX - container.form.Inside.x - container.x - container.Border.left;
-    const localY = mouseY - container.form.Inside.y - container.y - container.Border.top;
-    let dy = 0;
-    if(localY < threshold){ dy = (threshold - localY) * 0.5; }
-    else if(localY > innerH - threshold){ dy = -(localY - (innerH - threshold)) * 0.5; }
-    if(dy === 0) return;
-    if(!container.children || container.children.length === 0) return;
-    let contentChild = null;
-    for(let i=0;i<container.children.length;i++){
-      const ch = container.children[i];
-      if(ch.height > innerH){ contentChild = ch; break; }
-    }
-    if(!contentChild) return;
-    let insideY = contentChild.Inside.y + dy;
-    const minY = Math.min(0, innerH - contentChild.height);
-    const maxY = 0;
-    if(insideY < minY) insideY = minY;
-    if(insideY > maxY) insideY = maxY;
-    if(insideY !== contentChild.Inside.y){
-      contentChild.Inside.y = insideY;
-      contentChild.Transformation.Move.parentMove();
-    }
-  }
-
-  /*
    Réinitialise l’état global du DnD après un drop (réussi ou refusé) ou une annulation.
   */
   static reset() {
-    dragdrop.armed = false;
-    dragdrop.active = false;
-    dragdrop.control = null;
-    dragdrop.parent = null;
-    dragdrop.target = null;
-    dragdrop.srcX = 0;
+    // Réinitialisation complète de l'état global DnD pour éviter toute fuite entre interactions
+    dragdrop.armed = false;            // plus armé
+    dragdrop.active = false;           // plus actif
+    dragdrop.control = null;           // oubli de la source
+    dragdrop.parent = null;            // oubli du parent d'origine
+    dragdrop.target = null;            // oubli de la cible potentielle
+    dragdrop.srcX = 0;                 // remise à zéro positions d'origine
     dragdrop.srcY = 0;
-    dragdrop.startX = 0;
+    dragdrop.startX = 0;               // remise à zéro du point de départ souris
     dragdrop.startY = 0;
-    dragdrop.offsetX = 0;
+    dragdrop.offsetX = 0;              // offset de prise nul
     dragdrop.offsetY = 0;
-    dragdrop.data = { text: "", files: null };
+    dragdrop.data = { text: "", files: null }; // payload associée au drag (texte/fichiers) vidée
   }
 
   static dragenter(){
-    if(mousehover.control && mousehover.control.Drop && typeof mousehover.control.Drop.enter === 'function')
+    // Relais d'événement: informe le contrôle survolé que la zone de drop est entrée
+    if(mousehover.control){
       mousehover.control.Drop.enter();
+    }
   }
   static dragover(){
-    if(mousehover.control && mousehover.control.Drop && typeof mousehover.control.Drop.over === 'function')
+    // Relais d'événement: mise à jour continue pendant le survol (peut gérer un highlight)
+    if(mousehover.control){
       mousehover.control.Drop.over();
+    }
   }
   static dragleave(){
-    if(mousehover.control && mousehover.control.Drop && typeof mousehover.control.Drop.leave === 'function')
+    // Relais d'événement: indique que la souris sort de la zone de drop du contrôle survolé
+    if(mousehover.control){
       mousehover.control.Drop.leave();
+    }
   }
   static drop(){
-    if(dragdrop.target && dragdrop.target.Drop && typeof dragdrop.target.Drop.drop === 'function')
-      dragdrop.target.Drop.drop();
+    // Relais d'événement: déclenche le hook de drop sur la cible la plus pertinente
+    if(mousehover.control){
+      mousehover.control.Drop.drop();
+    }
   }
 }
 

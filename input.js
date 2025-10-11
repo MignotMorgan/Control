@@ -47,9 +47,12 @@ class Mouse {
     enter(){}
     leave(){}
     clickLeft(){};
-    clickLeftUp(){};
+    clickLeftUp(){
+        //alert("click");
+        this.control.Transformation.Move.scroll(10, 0);
+    };
     clickRight(){};
-    clickRightUp(){};
+    clickRightUp(){this.control.Transformation.Move.scroll(-10, 0);};
     // Appelé lors d'un mouvement de molette. Par défaut ne fait rien.
     // deltaY > 0 = défilement vers le bas, deltaY < 0 = vers le haut (convention standard)
     // deltaX peut être utilisé pour le défilement horizontal.

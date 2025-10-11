@@ -7,7 +7,7 @@ window.onload = ()=>{
     form.canScale = true;
 
     // Contrôle principal avec clipping (zone de démo)
-    let control = factory.create(200, 100, 250, 250);
+    let control = factory.create(200, 100, 350, 250);
     control.id = "01";
     control.canMove = true;
     control.canResize = true;
@@ -15,6 +15,21 @@ window.onload = ()=>{
     // Active le clipping pour que les enfants ne débordent pas visuellement du contrôle
     control.clip = true;
     form.add(control);
+
+    let control_11 = factory.create(205, 10, 150, 150);
+    control_11.id = "11";
+    control_11.canMove = true;
+    control_11.canResize = true;
+    control_11.canDrag = true;
+    control_11.canDrop = true;
+    control.add(control_11);
+
+    let control_12 = factory.create(20, 10, 50, 50);
+    control_12.id = "12";
+    control_12.canMove = true;
+    control_12.canResize = true;
+    control_12.canDrag = true;
+    control_11.add(control_12);
 
     // Contenu défilable à l'intérieur du contrôle clipé
     let control_2 = factory.create(-25, -5, 200, 600); // hauteur > zone clipée pour démontrer le scroll
@@ -36,6 +51,7 @@ window.onload = ()=>{
 
     let control_4 = factory.create(0, 0, 150, 150);
     control_4.id = "04";
+    control_4.canMove = true;
     control_4.canDrop = true; // cible de drop possible
     control_3.add(control_4);
 
@@ -155,63 +171,5 @@ window.onload = ()=>{
         themedBorderCtrl.Border.bottom = w;
         themedBorderCtrl.Border.left = w;
     };
-    
-    // Configure le DnD statique (seuil + callbacks de debug)
-    (function setupDND(){
-        const apply = ()=>{
-            try{
-                if(typeof DragDropManager !== 'undefined'){
-                    if(typeof DragDropManager.setConfig === 'function'){
-                        DragDropManager.setConfig({ activationThreshold: 6 });
-                    }
-                    if(typeof DragDropManager.setCallbacks === 'function'){
-                        DragDropManager.setCallbacks({
-                            onStart: (src)=> {
-                                try{
-                                    if(src && src.Lineage) src.__zIndexBeforeDrag = src.Lineage.index;
-                                    if(src && src.parent && src.parent.Lineage && typeof src.parent.Lineage.firstPosition === 'function'){
-                                        src.parent.Lineage.firstPosition(src);
-                                    }
-                                }catch(e){}
-                            },
-                            onActivate: (src)=> {
-                                try{
-                                    if(src && src.parent && src.parent.Lineage && typeof src.parent.Lineage.firstPosition === 'function'){
-                                        src.parent.Lineage.firstPosition(src);
-                                    }
-                                }catch(e){}
-                            },
-                            onUpdate: (src, tgt)=> {},
-                            onTargetChange: (oldT, newT)=> {},
-                            onDrop: (src, tgt)=> {},
-                            onCancel: (src)=> {},
-                            onEnd: (src)=> {
-                                try{
-                                    // Restaure le z-order d'origine si connu
-                                    if(src && src.parent && typeof src.__zIndexBeforeDrag === 'number' && src.parent.Lineage && src.parent.Lineage.controls){
-                                        const arr = src.parent.Lineage.controls;
-                                        let idx = arr.indexOf(src); if(idx>=0) arr.splice(idx,1);
-                                        const at = Math.max(0, Math.min(src.__zIndexBeforeDrag, arr.length));
-                                        arr.splice(at, 0, src);
-                                        for(let i=0;i<arr.length;i++){ arr[i].Lineage.index = i; }
-                                        src.__zIndexBeforeDrag = undefined;
-                                    }
-                                }catch(e){}
-                            },
-                        });
-                    }
-                    return true;
-                }
-            }catch(e){ /* ignore */ }
-            return false;
-        };
-        if(!apply()){
-            // Écoute le premier mousedown pour appliquer la config dès que possible
-            const once = ()=>{
-                setTimeout(apply, 0);
-                window.removeEventListener('mousedown', once, true);
-            };
-            window.addEventListener('mousedown', once, true);
-        }
-    })();
+ 
 };
