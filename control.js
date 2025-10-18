@@ -20,6 +20,7 @@ let focus = null;
 class Control {
     constructor() {
         this.Geometric;
+        this.Draw;
         this.Lineage;
         this.Input;
 
@@ -30,13 +31,19 @@ class Control {
     }
     initialize(){}
 
+    get Paint(){ return this.Draw.Paint; }
+    set Paint(value){ this.Draw.Paint = value; }
     get Rectangle(){ return this.Geometric.Rectangle; }
+    get Absolute(){ return this.Geometric.Rectangle.Absolute; }
     get Inside(){ return this.Geometric.Rectangle.Inside; }
     get Border(){ return this.Geometric.Rectangle.Border; }
-    get Draw(){ return this.Geometric.Draw; }
+    //get Draw(){ return this.Geometric.Draw; }
     get Drag(){ return this.Lineage.Drag; }
     get Drop(){ return this.Lineage.Drop; }
     get Transformation(){ return this.Geometric.Transformation; }
+    get Move(){ return this.Geometric.Transformation.Move; }
+    get Resize(){ return this.Geometric.Transformation.Resize; }
+    get Scale(){ return this.Geometric.Transformation.Scale; }
     get Mouse(){ return this.Input.Mouse; }
     get Keyboard(){ return this.Input.Keyboard; }
 
@@ -62,10 +69,11 @@ class Control {
     set canDrop(value){ this.Lineage.Drop.active = !!value; }
 
     get form(){return this.Lineage.form;}
+    get paint(){return this.Draw.Paint;}
     get parent(){return this.Lineage.parent;}
     get children(){return this.Lineage.children;}   
-    get right(){return this.x + this.width;};
-    get bottom(){return this.y + this.height;};
+    get right(){return this.Absolute.x + this.width;};
+    get bottom(){return this.Absolute.y + this.height;};
 
     get clip(){ return this.Draw.clip; }
     set clip(value){ this.Draw.clip = value; }
@@ -75,7 +83,8 @@ class Control {
     add(control){ this.Lineage.add(control); }
     remove(control){ return this.Lineage.removeChild(control); }
     destroy(){ this.Lineage.destroy(); }
-    onDraw(context, x, y){ this.Geometric.Draw.execute(context, x, y); }
+    onDraw(context, x, y){this.Draw.execute(); }//context, x, y); }
+    //onDraw(context, x, y){ this.Geometric.Draw.execute(context, x, y); }
 
     onFocus(){
         if( this.canFocus ){ focus = this; this.Lineage.firstPosition(null); }
@@ -93,11 +102,11 @@ class Form extends Control {
     
         controls[controls.length] = this;
 
-        this.paint = null;
+        //this.paint = null;
     }
     initialize(){
         super.initialize();
-        this.Lineage.form = this;        
+        this.Lineage.form = this;
         this.x = 0;
         this.y = 0;        
     }    

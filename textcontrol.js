@@ -386,7 +386,7 @@ class TextLayout {
         const paint = this.control.form && this.control.form.paint;
         paint.save(); 
         paint.font = this.font;
-        const left = this.control.form.Inside.x + this.control.x + this.control.Border.left + this.paddingLeft;
+        const left = this.control.form.Inside.x + this.control.Absolute.x + this.control.Border.left + this.paddingLeft;
         const li = this.lineIndexOf(index);
         const L = c.lines[li];
         const endNoNL = (this.control.textModel.text[L.end-1] === '\n') ? L.end-1 : L.end;
@@ -403,7 +403,7 @@ class TextLayout {
         const paint = this.control.form && this.control.form.paint;
         paint.save(); 
         paint.font = this.font;        
-        const left = this.control.form.Inside.x + this.control.x + this.control.Border.left + this.paddingLeft;
+        const left = this.control.form.Inside.x + this.control.Absolute.x + this.control.Border.left + this.paddingLeft;
         const li = Math.max(0, Math.min(lineIdx, c.lines.length-1));
         const L = c.lines[li];
         const endNoNL = (this.control.textModel.text[L.end-1] === '\n') ? L.end-1 : L.end;
@@ -456,8 +456,8 @@ class TextLayout {
         paint.save(); 
         paint.font = this.font;
         // Calcule la zone intérieure (coin supérieur gauche) en coordonnées écran
-        const left = this.control.form.Inside.x + this.control.x + this.control.Border.left + this.paddingLeft - (this.control._scrollX||0);
-        const top = this.control.form.Inside.y + this.control.y + this.control.Border.top + this.paddingTop - (this.control._scrollY||0);
+        const left = this.control.form.Inside.x + this.control.Absolute.x + this.control.Border.left + this.paddingLeft - (this.control._scrollX||0);
+        const top = this.control.form.Inside.y + this.control.Absolute.y + this.control.Border.top + this.paddingTop - (this.control._scrollY||0);
         // Convertit la position cliquée en une position relative à la zone intérieure
         const innerY = Math.max(0, y - top);
         // Trouve l'index de ligne correspondant à innerY

@@ -12,8 +12,19 @@ class Move {
         this.control = control;
         // active is managed via private field #active
     }
+    /**
+     * Indique si le déplacement est actif.
+     * Note: booléen stocké en champ privé `#active`.
+     */
     get active(){ return this.#active === true; }
     set active(value){ this.#active = !!value; }
+    /**
+     * Calcule la nouvelle position cible selon la souris et le contexte courant.
+     * - `mouse.x`, `mouse.y`: position globale de la souris.
+     * - `transformation.x`, `transformation.y`: décalage initial lors du clic (pour un drag fluide).
+     * - Si le parent n'est pas "clipé" (`clip === false`), on contraint le déplacement à l'intérieur du parent via `toIn()`.
+     * Terme: «clipping» = limitation de l'affichage/des déplacements à l'intérieur d'un rectangle (ici, celui du parent).
+     */
     on(){
         const control = this.control;
         let x = mouse.x - control.form.Inside.x - transformation.x;
@@ -27,18 +38,31 @@ class Move {
             this.to(x, y);
         }
     };
+    /**
+     * Applique une position absolue au contrôle et met à jour ses systèmes de coordonnées.
+     * - `control.x`, `control.y`: coordonnées absolues (écran/canvas).
+     * - `control.Inside.x`, `control.Inside.y`: coordonnées relatives à l'intérieur du parent (zone utile hors bordures).
+     * - `control.Absolute`: alias de la position absolue (utilisée par ailleurs dans le projet).
+     * Propage la mise à jour aux enfants via `parentMove()`.
+     */
     to(x, y){
         const control = this.control;
         const parent = control.parent;
-        control.Inside.x = parent === null ? x : x - parent.x - parent.Border.left;
-        control.Inside.y = parent === null ? y : y - parent.y - parent.Border.top;
+        control.Inside.x = parent === null ? x : x - parent.Absolute.x - parent.Border.left;
+        control.Inside.y = parent === null ? y : y - parent.Absolute.y - parent.Border.top;
         control.x = x;
         control.y = y;
+        control.Absolute.x = x;
+        control.Absolute.y = y;
 
         if( control.children !== null )
             for(let i = 0; i < control.children.length; i++)
                 control.children[i].Transformation.Move.parentMove();
-    }
+    };
+    /**
+     * Déplace en contraignant la position à rester À L'INTÉRIEUR du parent
+     * (hors bordures du parent). Idéal pour des contenus que l'on veut garder visibles.
+     */
     toIn(x, y){
         const control = this.control;
         const parent = control.parent;
@@ -48,6 +72,10 @@ class Move {
         if( y < parent.y + parent.Border.top ) y = parent.y + parent.Border.top;
         this.to(x, y);
     };
+    /**
+     * Déplace en contraignant la position à rester À L'EXTÉRIEUR (ou sur le bord) d'une zone donnée du parent.
+     * Optionnel selon le comportement voulu.
+     */
     toOut(x, y){
         const control = this.control;
         const parent = control.parent;
@@ -57,12 +85,24 @@ class Move {
         if( y < parent.y ) y = parent.y;
         this.to(x, y);
     };
+    /**
+     * Recalcule la position absolue depuis la position `Inside` (appelé après
+     * un déplacement/redimensionnement du parent). Maintient la cohérence des positions enfants.
+     */
     parentMove(){
         const control = this.control;
         const parent = control.parent;
+        if (parent === null) return;
         this.to(parent.x + parent.Border.left + control.Inside.x, parent.y + parent.Border.top + control.Inside.y);
     };
 
+    /**
+     * Simule un défilement du contenu enfant à l'intérieur d'un contrôle clipé.
+     * - `stepV`, `stepH`: pas vertical et horizontal (positif ou négatif).
+     * - Calcule les limites visibles (zone intérieure = taille - bordures) et
+     *   «clamp» les pas pour ne jamais dépasser ces limites.
+     * Terme: «clamp» = restreindre une valeur à un intervalle (min/max).
+     */
     scroll(stepV = 0, stepH = 0){
         const control = this.control;
         if(!control.clip) return;
@@ -107,16 +147,26 @@ class MoveForm extends Move{
         super(control);
     }
     
+    /**
+     * Variante pour la Form (racine): calcule la position à partir de la souris
+     * sans tenir compte d'un parent (coordonnées globales du canvas).
+     */
     on(){
         let x = mouse.x - transformation.x;
         let y = mouse.y - transformation.y;
         this.to(x, y);
     };
+    /**
+     * Déplace la Form via son moteur de peinture (`control.paint.move`) et
+     * réinitialise ses coordonnées relatives/absolues, puis met à jour les enfants.
+     */
     to(x, y){
         const control = this.control;
         control.paint.move(x, y);
     	control.Inside.x = x;
     	control.Inside.y = y;
+    	control.Absolute.x = 0;
+    	control.Absolute.y = 0;
     	
         if( control.children !== null )
             for(let i = 0; i < control.children.length; i++)
@@ -133,14 +183,26 @@ class Resize {
         this.control = control;
         // active is managed via private field #active
     }
+    /**
+     * Indique si le redimensionnement est actif.
+     */
     get active(){ return this.#active === true; }
     set active(value){ this.#active = !!value; }
+    /**
+     * Gère le redimensionnement en temps réel selon les bords actifs:
+     * - Calcule `left/top/right/bottom` en fonction de la souris et des contraintes.
+     * - Contraintes: taille minimale (incluant bordures), respect des enfants (si `!canScale`), et bords du parent si non clipé.
+     * - Si `canScale`, applique une MISE À L'ÉCHELLE plutôt qu'un simple resize.
+     * Termes:
+     * - «taille minimale» = on empêche la zone utile d'être trop petite (ex: < 2px).
+     * - «mise à l'échelle» (scale) = multiplication proportionnelle des dimensions (et bordures) par un ratio.
+     */
     on(){
         const control = this.control;
-        let left = control.x;
-        let top = control.y;
-        let right = control.x + control.width;
-        let bottom = control.y + control.height;
+        let left = control.Absolute.x;
+        let top = control.Absolute.y;
+        let right = control.Absolute.x + control.width;
+        let bottom = control.Absolute.y + control.height;
 
         let minsizeWidth = control.Border.left+control.Border.right+1 > transformation.border*2 ? control.Border.left+control.Border.right+1 : transformation.border*2;
         let minsizeHeight = control.Border.top+control.Border.bottom+1 > transformation.border*2 ? control.Border.top+control.Border.bottom+1 : transformation.border*2;
@@ -167,7 +229,7 @@ class Resize {
         if( transformation.right ){
             right = mouse.x - control.form.Inside.x;
             if( control.parent !== null && control.parent.clip === false /*&& !control.parent.IsInherit("Form")*/ && right > control.parent.x + control.parent.width - control.parent.Border.right ) right =  control.parent.x + control.parent.width - control.parent.Border.right;
-            if( right < control.x + minsizeWidth )right = control.x + minsizeWidth;
+            if( right < control.Absolute.x + minsizeWidth )right = control.Absolute.x + minsizeWidth;
 
             if( control.children !== null && !control.canScale && control.clip === false )
                 for(let r = 0; r < control.children.length; r++)
@@ -177,7 +239,7 @@ class Resize {
         if( transformation.bottom ){
             bottom = mouse.y - control.form.Inside.y;
             if( control.parent !== null && control.parent.clip === false /*&& !control.parent.IsInherit("Form")*/ && bottom > control.parent.y + control.parent.height - control.parent.Border.bottom ) bottom = control.parent.y + control.parent.height - control.parent.Border.bottom;
-            if( bottom < control.y + minsizeHeight )bottom = control.y + minsizeHeight;
+            if( bottom < control.Absolute.y + minsizeHeight )bottom = control.Absolute.y + minsizeHeight;
 
             if( control.children !== null && !control.canScale && control.clip === false )
                 for(let b = 0; b < control.children.length; b++)
@@ -187,13 +249,13 @@ class Resize {
         if(control.clip === true){
             if( right - left -control.Border.left-control.Border.right < 2)
             {
-                if( transformation.left )left = control.x;
-                if( transformation.right )right = control.x + control.width;
+                if( transformation.left )left = control.Absolute.x;
+                if( transformation.right )right = control.Absolute.x + control.width;
             }
             if( bottom - top -control.Border.top-control.Border.bottom < 2)
             {
-                if( transformation.top )top = control.y;
-                if( transformation.bottom )bottom = control.y + control.height;
+                if( transformation.top )top = control.Absolute.y;
+                if( transformation.bottom )bottom = control.Absolute.y + control.height;
             }
         }
         if(control.canScale){
@@ -203,8 +265,8 @@ class Resize {
             let ratio_height = height / control.height;
 
             let ratio_size = control.Transformation.Scale.minimumScale( {width:ratio_width, height:ratio_height} );
-            if(transformation.left && ratio_size.width === 1)left = control.x;
-            if(transformation.top && ratio_size.height === 1)top = control.y;
+            if(transformation.left && ratio_size.width === 1)left = control.Absolute.x;
+            if(transformation.top && ratio_size.height === 1)top = control.Absolute.y;
             if(transformation.left || transformation.top)
                 control.Transformation.Scale.moveToScale(left, top);
             control.Transformation.Scale.to(ratio_size.width, ratio_size.height);
@@ -215,6 +277,11 @@ class Resize {
             this.to(right - left, bottom - top);
         }
     }
+    /**
+     * Applique le nouveau `width/height` et notifie:
+     * - si `clip === true`, ajuste la surface de clipping via `Draw.clipResize()`.
+     * - propage un `parentResize()` aux enfants.
+     */
     to(width, height=width){
         const control = this.control;
         control.width = width;
@@ -236,6 +303,10 @@ class ResizeForm extends Resize{
     constructor(control){
         super(control);
     }
+    /**
+     * Variante Form: calcule le redimensionnement dans le repère de la Form.
+     * Peut basculer en mode «échelle» si `canScale`.
+     */
     on(){
         const control = this.control;
         var left = control.Inside.x;
@@ -267,6 +338,9 @@ class ResizeForm extends Resize{
             this.to(right - left, bottom - top);
         }
     };
+    /**
+     * Redimensionne la Form et met à jour son canvas via `paint.resize`.
+     */
     to(width, height){
         const control = this.control;
         control.paint.resize(width, height);
@@ -290,8 +364,18 @@ class Scale {
         this.control = control;
         // active is managed via private field #active
     }
+    /**
+     * Indique si la mise à l'échelle est active.
+     */
     get active(){ return this.#active === true; }
     set active(value){ this.#active = !!value; }
+    /**
+     * Applique une mise à l'échelle `ratio_width/ratio_height` sur:
+     * - `width/height` du contrôle
+     * - bordures (`Border`)
+     * - surface de clip si nécessaire
+     * Propage l'échelle aux enfants via `parentScale`.
+     */
     to(ratio_width, ratio_height){
         const control = this.control;
         control.width = control.width * ratio_width;
@@ -309,6 +393,9 @@ class Scale {
             for(let i = 0; i < control.children.length; i++)
                 control.children[i].Transformation.Scale.parentScale(ratio_width, ratio_height);
     }
+    /**
+     * Déplace le contrôle dans le repère de l'échelle (recalcule `Inside` et `x/y`).
+     */
     moveToScale(x, y){
         const control = this.control;
         const parent = control.parent;
@@ -316,13 +403,25 @@ class Scale {
         control.Inside.y = parent === null ? y : y - parent.y-parent.Border.top;
         control.x = x;
         control.y = y;
+        control.Absolute.x = x;
+        control.Absolute.y = y;
     }
+    /**
+     * Appelé depuis le parent pour propager l'échelle et repositionner l'enfant
+     * en fonction du ratio appliqué.
+     */
     parentScale(ratio_width, ratio_height){
         const control = this.control;
         const parent = control.parent;
         this.moveToScale(parent.x+parent.Border.left+(control.Inside.x*ratio_width), parent.y+parent.Border.top+(control.Inside.y*ratio_height) );
         this.to(ratio_width, ratio_height);
     }
+    /**
+     * Calcule le ratio minimal admissible pour éviter des tailles impossibles:
+     * - si `clip === true`, empêche la zone intérieure de passer sous 2px.
+     * - respecte les contraintes de redimensionnement (`canResize`).
+     * Remarque: retourne potentiellement `width:1` ou `height:1` pour signifier «ne pas réduire».
+     */
     minimumScale(ratio_size){
         const control = this.control;
         if(control.clip === true){
@@ -345,6 +444,9 @@ class ScaleForm extends Scale{
     constructor(control){
         super(control);
     }
+    /**
+     * Variante Form: ajuste également la taille du canvas via `paint.resize`.
+     */
     to(ratio_width, ratio_height){
         const control = this.control;
         control.paint.resize(control.width*ratio_width, control.height*ratio_height);
@@ -382,6 +484,14 @@ class Transformation {
         this.Resize;
         this.Scale;
     }
+    /**
+     * Point d'entrée: décide si l'utilisateur est en train de redimensionner (poignées actives)
+     * ou de déplacer le contrôle.
+     * - Si un bord est actif (`left/top/right/bottom`), on passe en mode resize.
+     * - Sinon, si `canMove` est vrai, on prépare le déplacement (stocke l'offset souris).
+     * - Sinon, on délègue au parent (bubbling) pour trouver un contrôle déplaçable.
+     * Terme: «poignées de redimensionnement» = petits carrés/repères cliquables sur les bords.
+     */
     on(){
         const control = this.control;
         if(  transformation.left || transformation.top || transformation.right || transformation.bottom ){
@@ -390,8 +500,8 @@ class Transformation {
         }
         else if( control.canMove ){
             transformation.control = control;
-            transformation.x = mouse.x - control.form.Inside.x - control.x;
-            transformation.y = mouse.y - control.form.Inside.y - control.y;
+            transformation.x = mouse.x - control.form.Inside.x - control.Absolute.x;
+            transformation.y = mouse.y - control.form.Inside.y - control.Absolute.y;
         }
         else if ( control.parent !== null )
             control.parent.Transformation.on();

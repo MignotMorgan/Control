@@ -7,7 +7,7 @@
 
 function cjsLoop(){
     for(let i = 0; i < controls.length; i++){
-        controls[i].paint.clear();
+        controls[i].Paint.clear();
         controls[i].onDraw(undefined);
     }
     queueNewFrame();
@@ -73,10 +73,10 @@ function onMouseMove(e){
         
         if( mousehover.control != null && mousehover.control.canResize )
         {
-            if(mouse.x <= mousehover.control.form.Inside.x + mousehover.control.x + transformation.border)transformation.left = true;
-            if(mouse.y <= mousehover.control.form.Inside.y + mousehover.control.y + transformation.border)transformation.top = true;
-            if(mouse.x >= mousehover.control.form.Inside.x + mousehover.control.x + mousehover.control.width - transformation.border)transformation.right = true;
-            if(mouse.y >= mousehover.control.form.Inside.y + mousehover.control.y + mousehover.control.height - transformation.border)transformation.bottom = true;
+            if(mouse.x <= mousehover.control.form.Inside.x + mousehover.control.Absolute.x + transformation.border)transformation.left = true;
+            if(mouse.y <= mousehover.control.form.Inside.y + mousehover.control.Absolute.y + transformation.border)transformation.top = true;
+            if(mouse.x >= mousehover.control.form.Inside.x + mousehover.control.Absolute.x + mousehover.control.width - transformation.border)transformation.right = true;
+            if(mouse.y >= mousehover.control.form.Inside.y + mousehover.control.Absolute.y + mousehover.control.height - transformation.border)transformation.bottom = true;
         }
     }
     else if( transformation.resize ) 

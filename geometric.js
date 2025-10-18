@@ -45,6 +45,7 @@ class Rectangle {
     constructor(control){
         this.control = control;
         this.Location;
+        this.Absolute;
         this.Inside;
         this.Size;
         this.Border;
@@ -54,21 +55,30 @@ class Rectangle {
     }
     contains(x, y){
         const control = this.control;
-        const location = this.Location;
+        const location = this.Absolute;
         return ( x > control.form.Inside.x +  location.x && x < control.form.Inside.x + location.x + this.Size.width 
             && y > control.form.Inside.y + location.y && y < control.form.Inside.y + location.y + this.Size.height );
     }
+    rectangleBackground(){
+        const control = this.control;
+        const location = this.Absolute;
+        const size = this.Size;
+        const border = this.Border;
+        return {
+            //x: control.form.Inside.x + location.x + border.left,
+            //y: control.form.Inside.y + location.y + border.top,
+            x: location.x + border.left,
+            y: location.y + border.top,
+            width: size.width - border.left - border.right,
+            height: size.height - border.top - border.bottom
+        };
+    }
 }
 
-/**
- * Conteneur géométrique attaché à un contrôle.
- * Regroupe la figure (Rectangle), les transformations (Move/Resize/Scale), et le rendu (Draw).
- */
 class Geometric{
     constructor(control){
         this.control = control;
         this.Rectangle;
         this.Transformation;
-        this.Draw;
     }
 }

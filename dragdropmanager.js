@@ -28,11 +28,11 @@ class DragDropManager {
     // Calcul de l'offset de prise dans le repère de la Form:
     // différence entre la position de la souris et le coin haut-gauche du contrôle au clic.
     // Cela permet de conserver la même "prise" visuelle pendant tout le drag.
-    dnd.offsetX = mouse.x - control.form.Inside.x - control.x;
-    dnd.offsetY = mouse.y - control.form.Inside.y - control.y;
+    dnd.offsetX = mouse.x - control.form.Inside.x - control.Absolute.x;
+    dnd.offsetY = mouse.y - control.form.Inside.y - control.Absolute.y;
     // Position absolue d'origine de la source (repère Form): sert à restaurer si drop invalide/annulé.
-    dnd.srcX = control.x;
-    dnd.srcY = control.y;
+    dnd.srcX = control.Absolute.x;
+    dnd.srcY = control.Absolute.y;
     dnd.armed = true;   // armé: prêt à devenir actif si le déplacement dépasse un seuil
     dnd.active = false; // inactif tant que le seuil n'est pas franchi
 
@@ -126,8 +126,6 @@ class DragDropManager {
     this.reset();
   }
 
-   // !!! Placer le scroll verticale et horizontale dans Transformation.Move
-   
   static autoScroll(container, mouseX, mouseY) {
     // Ne fonctionne que pour des conteneurs qui rognent (clip) leur contenu
     if(!container || !container.clip) return;
@@ -136,12 +134,10 @@ class DragDropManager {
     const innerH = container.height - container.Border.top - container.Border.bottom;
     if(innerW <= 0 || innerH <= 0) return; // rien de scrollable si zone non positive
     // Seuil de proximité des bords (en px) pour déclencher l'auto-scroll
-    const threshold = (typeof Config !== 'undefined' && Config && typeof Config.AUTOSCROLL_THRESHOLD === 'number')
-      ? Config.AUTOSCROLL_THRESHOLD
-      : 20;
+    const threshold = Config.AUTOSCROLL_THRESHOLD;
     // Conversion de la souris en coordonnées locales (Inside) du conteneur
-    const localX = mouseX - container.form.Inside.x - container.x - container.Border.left;
-    const localY = mouseY - container.form.Inside.y - container.y - container.Border.top;
+    const localX = mouseX - container.form.Inside.x - container.Absolute.x - container.Border.left;
+    const localY = mouseY - container.form.Inside.y - container.Absolute.y - container.Border.top;
 
     // Vitesses proportionnelles à la proximité des bords
     let stepV = 0, stepH = 0;

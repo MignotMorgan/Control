@@ -27,9 +27,9 @@ class Mouse {
 
         mousehover.selected = control;
 
-        if(control.clip === false || (mouse.x >= form.Inside.x + control.x+control.Border.left 
+        if(control.clip === false || (mouse.x >= form.Inside.x + control.Absolute.x+control.Border.left 
             && mouse.x <= form.Inside.x + control.right-control.Border.right 
-            && mouse.y >= form.Inside.y + control.y+control.Border.top 
+            && mouse.y >= form.Inside.y + control.Absolute.y+control.Border.top 
             && mouse.y <= form.Inside.y + control.bottom-control.Border.bottom
         ))
         {
@@ -47,12 +47,9 @@ class Mouse {
     enter(){}
     leave(){}
     clickLeft(){};
-    clickLeftUp(){
-        //alert("click");
-        this.control.Transformation.Move.scroll(10, 0);
-    };
+    clickLeftUp(){};
     clickRight(){};
-    clickRightUp(){this.control.Transformation.Move.scroll(-10, 0);};
+    clickRightUp(){};
     // Appelé lors d'un mouvement de molette. Par défaut ne fait rien.
     // deltaY > 0 = défilement vers le bas, deltaY < 0 = vers le haut (convention standard)
     // deltaX peut être utilisé pour le défilement horizontal.

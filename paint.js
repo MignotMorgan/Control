@@ -57,6 +57,7 @@ class PaintCanvas extends Paint{
         super(x, y, width, height, hide);
         // Crée et configure un élément <canvas>
         this.canvas = document.createElement('canvas');
+        this.canvas.style.border = '2px solid black';
         if(this.hide)
             this.canvas.style.display = 'none';
         this.canvas.style.position = 'absolute';

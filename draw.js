@@ -3,74 +3,135 @@
  * Gère optionnellement un clipping via une surface de peinture offscreen (this.clip).
  */
 class Draw {
+    #Paint;
     constructor(control) {
         this.control = control;
-        // État de clipping des enfants (privé)
+        this.#Paint = null;
         this.#clip = false;
     }
     // Champ privé
     #clip;
+    /**
+     * Indique si le contrôle doit clipper (masquer) le rendu de ses enfants
+     * dans sa zone intérieure (zone utile = taille - bordures).
+     * Terme: «clipping» = découper/limiter le dessin à un rectangle.
+     */
     get clip(){ return this.#clip === true; }
     set clip(value){ this.#clip = !!value; }
-    
+
+    /**
+     * Renvoie la surface de peinture (canvas abstrait) à utiliser:
+     * - si un Paint local est défini, l'utiliser
+     * - sinon, récupérer celui de la `form` par défaut
+     */
+    get Paint(){
+        if(this.#Paint !== null) return this.#Paint;
+        const form = this.control && this.control.form;
+        if(form && form.Draw && form.Draw.Paint != null) return form.Draw.Paint; 
+        return null;//undefined;
+    }
+    set Paint(value){ this.#Paint = value; }    
     // Exécute le dessin du contrôle, puis de ses enfants (avec ou sans clipping)
     /**
      * Exécute le rendu du contrôle:
      * - paint,x,y optionnels permettent un rendu relatif (appel depuis un parent)
      * - si un clip est actif, les enfants sont dessinés dans la surface offscreen
      */
-    execute(paint, x, y) {
+    execute(){ //paint, x, y) {
         const control = this.control;
-        if(paint === undefined)
-            this.draw(control.form.paint, control.x, control.y, control.width, control.height);
-        else
-            this.draw(paint, control.x-x, control.y-y, control.width, control.height);
-  
+        const paint = this.Paint;
+        //const x = control.x;
+        //const y = control.y;
+
+//        if(paint === null || paint === undefined)
+//            this.draw(control.form.paint, control.x, control.y, control.width, control.height);
+//        else
+        this.draw(paint, control.Absolute.x, control.Absolute.y, control.width, control.height);
+
         if(this.#clip === true){
             // Détermine le paint cible et le rect de clip dans le repère du paint
-            const tp = (paint === undefined) ? control.form.paint : paint;
             const B = control.Border;
+            const ix = control.Absolute.x + B.left;
+            const iy = control.Absolute.y + B.top;
             const iw = control.width - B.left - B.right;
             const ih = control.height - B.top - B.bottom;
-            if(iw > 0 && ih > 0){
-                const ix = (paint === undefined) ? (control.x + B.left) : (control.x - x + B.left);
-                const iy = (paint === undefined) ? (control.y + B.top)  : (control.y - y + B.top);
-                tp.clipRectangle(ix, iy, iw, ih, () => {
-                    this.drawChildren(paint, x, y);
-                });
-            } else {
-                // Rien à dessiner si la zone utile est vide
-            }
-        } else {
-            this.drawChildren(paint, x, y);
+            // On demande au moteur de peinture de ne dessiner les enfants
+            // qu'à l'intérieur du rectangle (clipping temporaire via callback)
+            paint.clipRectangle(ix, iy, iw, ih, () => { this.drawChildren(); });
+        }else{
+            this.drawChildren();
         }
     }
-    /** Dessine récursivement les enfants en respectant l'ordre d'empilement. */
-    drawChildren(paint, x, y)
-    {
+    /**
+     * Dessine récursivement les enfants.
+     * Remarque: l'ordre d'empilement (z-order) est géré par l'ordre dans `children`.
+     */
+    drawChildren(){
         const control = this.control;
         const children = control.children;
         if(children != null)
             for(let i = 0; i < children.length; i++)
-                children[i].Draw.execute(paint, x, y);
+               // if(children[i] !== dragdrop.control)
+                    children[i].Draw.execute();
     }
 
-    /** Ajuste la taille de la surface clip si active (inutile avec clipping natif, laissé pour compat). */
-    clipResize(width, height){
-        // Plus d'offscreen à redimensionner; méthode conservée pour compatibilité API.
-    }
     // Dessine le cadre du contrôle (bords + intérieur) et des repères visuels
+    /**
+     * Pipeline de rendu d'un contrôle:
+     * 1) `drawBaseFrame`: bordures extérieures (ou image nine-slice si définie)
+     * 2) `drawBackground`: fond de la zone intérieure
+     * 3) feedback drag & drop et poignées de redimensionnement
+     * Terme: «nine-slice» = image découpe 9 zones pour redimensionner la bordure
+     * sans déformer les coins.
+     */
     draw(paint, x, y, width, height){
         const state = this.computeVisualState();
         this.drawBaseFrame(paint, x, y, width, height, state);
         this.drawBackground(paint, x, y, width, height, state);
-        this.drawInnerBorder(paint, x, y, width, height, state);
-        this.drawHoverOutline(paint, x, y, width, height, state);
+        //this.drawInnerBorder(paint, x, y, width, height, state);
+        //this.drawHoverOutline(paint, x, y, width, height, state);
         this.drawDragDropFeedback(paint, x, y, width, height, state);
         this.drawResizeHandles(paint, x, y, width, height, state);
     }
 
+    // Fond
+    /**
+     * Peint le fond de la zone «Inside» du contrôle.
+     * - Peut être une couleur, un motif répété, ou une image ajustée.
+     */
+    drawBackground(paint, x, y, width, height, state){
+        const control = this.control;
+        const inside = control.Rectangle.rectangleBackground();
+        const theme = state.theme;
+/*
+        const t = state.theme.background;
+        if(t && t.image){
+            // Si repeat est défini, on utilise un pattern; sinon on ajuste l'image selon size
+            if(t.repeat){
+//                console.log("drawBackground repeat");
+                paint.drawPatternImage(t.image, inside.x, inside.y, inside.width, inside.height, { repeat: t.repeat, offsetX: t.offsetX||0, offsetY: t.offsetY||0 });
+            } else {
+ //               console.log("drawBackground fit");
+                paint.drawImageFitting(t.image, inside.x, inside.y, inside.width, inside.height, t.size || 'stretch');
+            }
+        } else {
+//            console.log("drawBackground", inside.x, inside.y, inside.width, inside.height, t.color);
+            paint.drawRectangle(inside.x, inside.y, inside.width, inside.height, t.color);
+        }
+*/
+            paint.drawRectangle(inside.x, inside.y, inside.width, inside.height, "blue");//theme.background.color);
+    }
+
+
+
+
+
+
     // Construit un état visuel unique utilisé par toutes les sous-fonctions
+    /**
+     * Construit un état visuel commun pour toutes les étapes du rendu:
+     * - hover, drag & drop, redimensionnement, taille des poignées, thème.
+     */
     computeVisualState(){
         const control = this.control;
         const st = {
@@ -111,6 +172,13 @@ class Draw {
     }
 
     // Thème par défaut + surcharge instance (this.theme) ou control.theme
+    /**
+     * Retourne le thème effectif en fusionnant:
+     * - valeurs par défaut
+     * - surcharges au niveau `this.theme` ou `control.theme`
+     * Terme: merge «shallow»/«deep» contrôlé: on évite de descendre dans
+     * les objets non-plain (ex: `HTMLImageElement`).
+     */
     getTheme(){
         const control = this.control;
         const defaults = {
@@ -147,6 +215,11 @@ class Draw {
     }
 
     // Cadre externe standard
+    /**
+     * Dessine la bordure externe:
+     * - soit via une image «nine-slice» si `state.theme.base.borderImage` est défini
+     * - sinon via des rectangles/bordure simple
+     */
     drawBaseFrame(paint, x, y, width, height, state){
         const control = this.control;
         const t = state.theme.base;
@@ -175,30 +248,11 @@ class Draw {
         }
     }
 
-    // Fond
-    drawBackground(paint, x, y, width, height, state){
-        const control = this.control;
-        const t = state.theme.background;
-        // Zone intérieure uniquement
-        const B = control.Border;
-        const ix = x + B.left;
-        const iy = y + B.top;
-        const iw = Math.max(0, width - B.left - B.right);
-        const ih = Math.max(0, height - B.top - B.bottom);
-        if(iw <= 0 || ih <= 0) return;
-        if(t && t.image){
-            // Si repeat est défini, on utilise un pattern; sinon on ajuste l'image selon size
-            if(t.repeat){
-                paint.drawPatternImage(t.image, ix, iy, iw, ih, { repeat: t.repeat, offsetX: t.offsetX||0, offsetY: t.offsetY||0 });
-            } else {
-                paint.drawImageFitting(t.image, ix, iy, iw, ih, t.size || 'stretch');
-            }
-        } else {
-            paint.drawRectangle(ix, iy, iw, ih, t.color);
-        }
-    }
 
     // Bordure intérieure de la zone utile (Inside)
+    /**
+     * Dessine la bordure intérieure de la zone «Inside» (utile pour le debug/thème).
+     */
     drawInnerBorder(paint, x, y, width, height, state){
         const control = this.control;
         const t = state.theme.innerBorder;
@@ -212,6 +266,9 @@ class Draw {
     }
 
     // Surbrillance au survol (désactivée pendant un drag actif)
+    /**
+     * Surbrillance lors du survol (non affichée durant un drag actif).
+     */
     drawHoverOutline(paint, x, y, width, height, state){
         if(!state.drag.active && state.hovered){
             const t = state.theme.hover;
@@ -220,6 +277,11 @@ class Draw {
     }
 
     // Feedback Drag & Drop (cible valide/invalide, ghost de la source)
+    /**
+     * Indications visuelles pour le drag & drop:
+     * - cible valide/incorrecte, et «ghost» de la source.
+     * Terme: «alpha» = opacité; une alpha plus faible rend l'élément translucide.
+     */
     drawDragDropFeedback(paint, x, y, width, height, state){
         if(state.drag.active){
             const td = state.theme.drop;
@@ -239,6 +301,10 @@ class Draw {
     }
 
     // Poignées de redimensionnement
+    /**
+     * Dessine les poignées de redimensionnement (8 carrés autour du contrôle)
+     * lorsque le contrôle est survolé ou en cours de transformation.
+     */
     drawResizeHandles(paint, x, y, width, height, state){
         const control = this.control;
         const showHandles = control.canResize && (
@@ -283,6 +349,11 @@ class DrawForm extends Draw{
     constructor(control){
         super(control);
     }
+    /**
+     * Dessin de la Form:
+     * - dessine le cadre légèrement inset (x+1,y+1,width-2,height-2)
+     * - affiche des informations de debug (positions souris, états transformation/dragdrop)
+     */
     draw(paint, x, y, width, height){
         super.draw(paint, x+1, y+1, width-2, height-2);
         // Affichage d'informations utiles pour le débogage
@@ -292,7 +363,7 @@ class DrawForm extends Draw{
         if(mousehover.control != null && mousehover.selected != null)
         {
             iy += 20;
-            paint.drawText(ix, iy, "souris dans le contrôle : " + (mouse.x - mousehover.control.form.Inside.x - mousehover.control.x) + " : " + (mouse.y - mousehover.control.form.Inside.y - mousehover.control.y));
+            paint.drawText(ix, iy, "souris dans le contrôle : " + (mouse.x - mousehover.control.form.Inside.x - mousehover.control.Absolute.x) + " : " + (mouse.y - mousehover.control.form.Inside.y - mousehover.control.Absolute.y));
             iy += 20;
             paint.drawText(ix, iy, "mousehover : " + mousehover.control.id + " X: " + mousehover.control.Inside.x + " Y: " + mousehover.control.Inside.y + " width: " + mousehover.control.width + " height: " + mousehover.control.height + " parent: " + (mousehover.control.parent === null ? "null" : mousehover.control.parent.id));
         }
@@ -306,6 +377,10 @@ class DrawForm extends Draw{
         paint.drawText(ix, iy, "armed: " + dragdrop.armed + " active: " + dragdrop.active + " control: " + (dragdrop.control === null ? "null" : dragdrop.control.id) + " parent: " + (dragdrop.parent === null ? "null" : dragdrop.parent.id) + " target: " + (dragdrop.target === null ? "null" : dragdrop.target.id));
         // (HUD drag temporaire retiré)
     }
+    /**
+     * Dessin des enfants de la Form en ordre inverse (arrière -> avant),
+     * puis dessin d'un éventuel contrôle en cours de drag en dernier.
+     */
     drawChildren(paint, x, y)
     {
         const control = this.control;
@@ -314,5 +389,7 @@ class DrawForm extends Draw{
             for(let i = children.length - 1; i >= 0 ; i--)
                 if ( children[i] != null && children[i].visible )
                     children[i].Draw.execute(paint, x, y);
+    
+        if(dragdrop.control != null)dragdrop.control.Draw.execute(paint, x, y);
     };
 }

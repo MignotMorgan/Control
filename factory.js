@@ -23,8 +23,8 @@ class Factory{
         control.Geometric = this.createGeometric(control, x, y, width, height, top, right, bottom, left);
         control.Lineage = this.createLineage(control);
         control.Input = this.createInput(control);
-        control.paint = this.createPaint(x, y, width, height);
-
+        control.Draw = this.createDraw(control);
+        //control.paint = this.createPaint(x, y, width, height);
         control.initialize();
 
         return control;
@@ -38,13 +38,14 @@ class Factory{
         let geometric = new Geometric(control);
         geometric.Rectangle = this.createRectangle(control, x, y, width, height, top, right, bottom, left);
         geometric.Transformation = this.createTransformation(control);
-        geometric.Draw = this.createDraw(control);
+        //geometric.Draw = this.createDraw(control);
         return geometric;
         }
     /** Crée une Rectangle rectangulaire avec Location/Inside/Size/Border initialisés. */
     createRectangle(control, x, y, width, height, top, right, bottom, left){
         let rectangle = new Rectangle(control);
         rectangle.Location = this.createLocation(x, y);
+        rectangle.Absolute = this.createLocation(x, y);
         rectangle.Inside = this.createLocation(x, y);
         rectangle.Size = this.createSize(width, height);
         rectangle.Border = this.createBorder(top, right, bottom, left);
@@ -67,7 +68,7 @@ class Factory{
     createScale(control){return new Scale(control); }
 
     /** Crée le module de dessin pour ce contrôle (Draw par défaut). */
-    createDraw(control){ return new Draw(control); }
+    createDraw(control){return new Draw(control); }
 
     /** Crée le module hiérarchique (Lineage) et les extensions Drag/Drop. */
     createLineage(control){
@@ -102,7 +103,22 @@ class Factory{
 class FactoryForm extends Factory{  
     createControl(){return new Form(); }
     createPaint(x, y, width, height, hide = false){ return new PaintCanvas(x, y, width, height, hide);}
-    createDraw(control){ return new DrawForm(control); }
+    createRectangle(control, x, y, width, height, top, right, bottom, left){
+        let rectangle = new Rectangle(control);
+        rectangle.Location = this.createLocation(0, 0);
+        rectangle.Absolute = this.createLocation(0, 0);
+        rectangle.Inside = this.createLocation(x, y);
+        rectangle.Size = this.createSize(width, height);
+        rectangle.Border = this.createBorder(top, right, bottom, left);
+        return rectangle;
+    }
+    createDraw(control){
+        const draw = new DrawForm(control);
+        const paint = this.createPaint(control.Inside.x, control.Inside.y, control.width, control.height);
+        draw.Paint = paint;
+        //if(control && control instanceof Form){ control.paint = paint; }
+        return draw;
+    }
     createMove(control){ return new MoveForm(control); }
     createResize(control){ return new ResizeForm(control); }
     createScale(control){ return new ScaleForm(control); }
