@@ -21,14 +21,14 @@ class Move {
     /**
      * Calcule la nouvelle position cible selon la souris et le contexte courant.
      * - `mouse.x`, `mouse.y`: position globale de la souris.
-     * - `transformation.x`, `transformation.y`: décalage initial lors du clic (pour un drag fluide).
+     * - `transformation.offsetX`, `transformation.offsetY`: décalage initial lors du clic (pour un drag fluide).
      * - Si le parent n'est pas "clipé" (`clip === false`), on contraint le déplacement à l'intérieur du parent via `toIn()`.
      * Terme: «clipping» = limitation de l'affichage/des déplacements à l'intérieur d'un rectangle (ici, celui du parent).
      */
     on(){
         const control = this.control;
-        let x = mouse.x - control.form.Inside.x - transformation.x;
-        let y = mouse.y - control.form.Inside.y - transformation.y;
+        let x = mouse.x - control.form.Inside.x - transformation.offsetX;
+        let y = mouse.y - control.form.Inside.y - transformation.offsetY;
 
         const parent = control.parent;
         if( parent !== null && parent.clip === false){
@@ -152,8 +152,8 @@ class MoveForm extends Move{
      * sans tenir compte d'un parent (coordonnées globales du canvas).
      */
     on(){
-        let x = mouse.x - transformation.x;
-        let y = mouse.y - transformation.y;
+        let x = mouse.x - transformation.offsetX;
+        let y = mouse.y - transformation.offsetY;
         this.to(x, y);
     };
     /**
@@ -167,10 +167,11 @@ class MoveForm extends Move{
     	control.Inside.y = y;
     	control.Absolute.x = 0;
     	control.Absolute.y = 0;
-    	
+    /*	
         if( control.children !== null )
             for(let i = 0; i < control.children.length; i++)
                 control.children[i].Transformation.Move.parentMove();
+    */
     }
 }
 /**
@@ -500,8 +501,8 @@ class Transformation {
         }
         else if( control.canMove ){
             transformation.control = control;
-            transformation.x = mouse.x - control.form.Inside.x - control.Absolute.x;
-            transformation.y = mouse.y - control.form.Inside.y - control.Absolute.y;
+            transformation.offsetX = mouse.x - control.form.Inside.x - control.Absolute.x;
+            transformation.offsetY = mouse.y - control.form.Inside.y - control.Absolute.y;
         }
         else if ( control.parent !== null )
             control.parent.Transformation.on();

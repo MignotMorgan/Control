@@ -6,7 +6,7 @@ let Modifiers = { shift:false, ctrl:false, alt:false, meta:false, capslock:false
 // Cela permet de ne  pas repositionner le contrôle en alignant son coin haut-gauche directement sous la souris.
 // C'est utilisé pour conserver l'articulation visuelle de la prise, de sorte que le point “saisi” au départ reste sous la souris.
 let dragdrop = {armed:false, active:false, control:null, parent:null, target:null, srcX:0, srcY:0, startX:0, startY:0, offsetX:0, offsetY:0, data:{ text:"", files: null }};
-let transformation = {control:null, x:0, y:0, resize:false, border:5, left:false, top:false, right:false, bottom:false, lock:false};
+let transformation = {control:null, offsetX:0, offsetY:0, resize:false, border:5, left:false, top:false, right:false, bottom:false, lock:false};
 let focus = null;
 
 /**
