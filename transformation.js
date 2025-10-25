@@ -1,21 +1,16 @@
 /**
- * Déplacement (Move): gère la position absolue d'un contrôle
+ * Déplacement (Move): gère la position Absolute d'un contrôle
  * - on(): calcule la nouvelle position selon la souris et le contexte
- * - to(x,y): applique une position absolue et propage aux enfants
+ * - to(x,y): applique une position Absolute et propage aux enfants
  * - toIn(x,y): contraint le déplacement à l'intérieur du parent (si non clipé)
  * - toOut(x,y): contraint à l'extérieur (option)
- * - parentMove(): recalcule la position absolue depuis Inside (appel parent)
+ * - parentMove(): recalcule la position Absolute depuis Inside (appel parent)
  */
 class Move {
     #active = false;
     constructor(control){
         this.control = control;
-        // active is managed via private field #active
     }
-    /**
-     * Indique si le déplacement est actif.
-     * Note: booléen stocké en champ privé `#active`.
-     */
     get active(){ return this.#active === true; }
     set active(value){ this.#active = !!value; }
     /**
@@ -27,29 +22,29 @@ class Move {
      */
     on(){
         const control = this.control;
-        let x = mouse.x - control.form.Inside.x - transformation.offsetX;
-        let y = mouse.y - control.form.Inside.y - transformation.offsetY;
+        const x = mouse.x - control.form.Inside.x - transformation.offsetX;
+        const y = mouse.y - control.form.Inside.y - transformation.offsetY;
 
         const parent = control.parent;
-        if( parent !== null && parent.clip === false){
-                control.Transformation.Move.toIn(x, y);
+        if( parent && parent.clip){
+                this.to(x, y);
         }
         else{
-            this.to(x, y);
+            this.toIn(x, y);
         }
     };
     /**
-     * Applique une position absolue au contrôle et met à jour ses systèmes de coordonnées.
-     * - `control.x`, `control.y`: coordonnées absolues (écran/canvas).
+     * Applique une position Absolute au contrôle et met à jour ses systèmes de coordonnées.
+     * - `control.x`, `control.y`: coordonnées Absolutes (écran/canvas).
      * - `control.Inside.x`, `control.Inside.y`: coordonnées relatives à l'intérieur du parent (zone utile hors bordures).
-     * - `control.Absolute`: alias de la position absolue (utilisée par ailleurs dans le projet).
+     * - `control.Absolute`: alias de la position Absolute (utilisée par ailleurs dans le projet).
      * Propage la mise à jour aux enfants via `parentMove()`.
      */
     to(x, y){
         const control = this.control;
         const parent = control.parent;
-        control.Inside.x = parent === null ? x : x - parent.Absolute.x - parent.Border.left;
-        control.Inside.y = parent === null ? y : y - parent.Absolute.y - parent.Border.top;
+        control.Inside.x = parent ? x - parent.Absolute.x - parent.Border.left : x;
+        control.Inside.y = parent ? y - parent.Absolute.y - parent.Border.top : y;
         control.x = x;
         control.y = y;
         control.Absolute.x = x;
@@ -57,7 +52,7 @@ class Move {
 
         if( control.children !== null )
             for(let i = 0; i < control.children.length; i++)
-                control.children[i].Transformation.Move.parentMove();
+                control.children[i].Move.parentMove();
     };
     /**
      * Déplace en contraignant la position à rester À L'INTÉRIEUR du parent
@@ -68,32 +63,36 @@ class Move {
         const parent = control.parent;
         if( x > parent.right - parent.Border.right - control.width ) x = parent.right - control.width - parent.Border.right;
         if( y > parent.bottom - parent.Border.bottom - control.height ) y = parent.bottom - control.height - parent.Border.bottom;
-        if( x < parent.x + parent.Border.left ) x = parent.x + parent.Border.left;
-        if( y < parent.y + parent.Border.top ) y = parent.y + parent.Border.top;
+        if( x < parent.Absolute.x + parent.Border.left ) x = parent.Absolute.x + parent.Border.left;
+        if( y < parent.Absolute.y + parent.Border.top ) y = parent.Absolute.y + parent.Border.top;
         this.to(x, y);
     };
     /**
      * Déplace en contraignant la position à rester À L'EXTÉRIEUR (ou sur le bord) d'une zone donnée du parent.
      * Optionnel selon le comportement voulu.
      */
+    /*
     toOut(x, y){
         const control = this.control;
         const parent = control.parent;
         if( x > parent.right - control.width ) x = parent.right - control.width;
         if( y > parent.bottom - control.height ) y = parent.bottom - control.height;
-        if( x < parent.x ) x = parent.x;
-        if( y < parent.y ) y = parent.y;
+        if( x < parent.Absolute.x ) x = parent.Absolute.x;
+        if( y < parent.Absolute.y ) y = parent.Absolute.y;
         this.to(x, y);
     };
+    */
     /**
-     * Recalcule la position absolue depuis la position `Inside` (appelé après
+     * Recalcule la position Absolute depuis la position `Inside` (appelé après
      * un déplacement/redimensionnement du parent). Maintient la cohérence des positions enfants.
      */
     parentMove(){
         const control = this.control;
         const parent = control.parent;
         if (parent === null) return;
-        this.to(parent.x + parent.Border.left + control.Inside.x, parent.y + parent.Border.top + control.Inside.y);
+        const x = parent.Absolute.x + parent.Border.left + control.Inside.x;
+        const y = parent.Absolute.y + parent.Border.top + control.Inside.y;
+        this.to(x, y);
     };
 
     /**
@@ -138,7 +137,7 @@ class Move {
 
         for(let i = 0; i < control.children.length; i++){
             const ch = control.children[i];
-            ch.Transformation.Move.to(ch.x + stepH, ch.y + stepV);
+            ch.Move.to(ch.Absolute.x + stepH, ch.Absolute.y + stepV);
         }
     }
 }
@@ -158,7 +157,7 @@ class MoveForm extends Move{
     };
     /**
      * Déplace la Form via son moteur de peinture (`control.paint.move`) et
-     * réinitialise ses coordonnées relatives/absolues, puis met à jour les enfants.
+     * réinitialise ses coordonnées relatives/Absolutes, puis met à jour les enfants.
      */
     to(x, y){
         const control = this.control;
@@ -170,7 +169,7 @@ class MoveForm extends Move{
     /*	
         if( control.children !== null )
             for(let i = 0; i < control.children.length; i++)
-                control.children[i].Transformation.Move.parentMove();
+                control.children[i].Move.parentMove();
     */
     }
 }
@@ -200,60 +199,62 @@ class Resize {
      */
     on(){
         const control = this.control;
+        const parent = control.parent;
+        const border = control.Border;
         let left = control.Absolute.x;
         let top = control.Absolute.y;
         let right = control.Absolute.x + control.width;
         let bottom = control.Absolute.y + control.height;
 
-        let minsizeWidth = control.Border.left+control.Border.right+1 > transformation.border*2 ? control.Border.left+control.Border.right+1 : transformation.border*2;
-        let minsizeHeight = control.Border.top+control.Border.bottom+1 > transformation.border*2 ? control.Border.top+control.Border.bottom+1 : transformation.border*2;
+        let minsizeWidth = border.left + border.right+1 > transformation.border*2 ? border.left + border.right+1 : transformation.border*2;
+        let minsizeHeight = border.top + border.bottom+1 > transformation.border*2 ? border.top + border.bottom+1 : transformation.border*2;
         if( transformation.left ){
             left = mouse.x - control.form.Inside.x;
-            if( control.parent !== null && control.parent.clip === false /*&& !control.parent.IsInherit("Form")*/ && left < control.parent.x + control.parent.Border.left )left = control.parent.x + control.parent.Border.left;
+            if( parent !== null && parent.clip === false && left < parent.Absolute.x + parent.Border.left )left = parent.Absolute.x + parent.Border.left;
             if( left > control.right - minsizeWidth )left = control.right - minsizeWidth;
 
             if( control.children !== null && !control.canScale && control.clip === false )
                 for(let l = 0; l < control.children.length; l++)
-                    if( left + control.children[l].Inside.x + control.children[l].width + control.Border.left + control.Border.right > right )
-                        left = right - control.children[l].Inside.x - control.children[l].width - control.Border.left - control.Border.right;
+                    if( left + control.children[l].Inside.x + control.children[l].width + border.left + border.right > right )
+                        left = right - control.children[l].Inside.x - control.children[l].width - border.left - border.right;
         }
         if( transformation.top ){
             top = mouse.y - control.form.Inside.y;
-            if( control.parent !== null && control.parent.clip === false /*&& !control.parent.IsInherit("Form")*/ && top < control.parent.y + control.parent.Border.top ) top = control.parent.y + control.parent.Border.top;
+            if( parent !== null && parent.clip === false && top < parent.Absolute.y + parent.Border.top ) top = parent.Absolute.y + parent.Border.top;
             if( top > control.bottom - minsizeHeight )top = control.bottom - minsizeHeight;
 
             if( control.children !== null && !control.canScale && control.clip === false )
                 for(let t = 0; t < control.children.length; t++)
-                    if( top + control.children[t].Inside.y + control.children[t].height + control.Border.top + control.Border.bottom > bottom )
-                        top = bottom - control.children[t].Inside.y - control.children[t].height - control.Border.top - control.Border.bottom;
+                    if( top + control.children[t].Inside.y + control.children[t].height + border.top + border.bottom > bottom )
+                        top = bottom - control.children[t].Inside.y - control.children[t].height - border.top - border.bottom;
         }
         if( transformation.right ){
             right = mouse.x - control.form.Inside.x;
-            if( control.parent !== null && control.parent.clip === false /*&& !control.parent.IsInherit("Form")*/ && right > control.parent.x + control.parent.width - control.parent.Border.right ) right =  control.parent.x + control.parent.width - control.parent.Border.right;
+            if( parent !== null && parent.clip === false && right > parent.Absolute.x + parent.width - parent.Border.right ) right =  parent.Absolute.x + parent.width - parent.Border.right;
             if( right < control.Absolute.x + minsizeWidth )right = control.Absolute.x + minsizeWidth;
 
             if( control.children !== null && !control.canScale && control.clip === false )
                 for(let r = 0; r < control.children.length; r++)
-                    if( left + control.children[r].Inside.x + control.children[r].width + control.Border.left + control.Border.right > right )
-                        right = left + control.children[r].Inside.x + control.children[r].width + control.Border.left + control.Border.right;
+                    if( left + control.children[r].Inside.x + control.children[r].width + border.left + border.right > right )
+                        right = left + control.children[r].Inside.x + control.children[r].width + border.left + border.right;
         }
         if( transformation.bottom ){
             bottom = mouse.y - control.form.Inside.y;
-            if( control.parent !== null && control.parent.clip === false /*&& !control.parent.IsInherit("Form")*/ && bottom > control.parent.y + control.parent.height - control.parent.Border.bottom ) bottom = control.parent.y + control.parent.height - control.parent.Border.bottom;
+            if( parent !== null && parent.clip === false && bottom > parent.Absolute.y + parent.height - parent.Border.bottom ) bottom = parent.Absolute.y + parent.height - parent.Border.bottom;
             if( bottom < control.Absolute.y + minsizeHeight )bottom = control.Absolute.y + minsizeHeight;
 
             if( control.children !== null && !control.canScale && control.clip === false )
                 for(let b = 0; b < control.children.length; b++)
-                    if( top + control.children[b].Inside.y + control.children[b].height + control.Border.top + control.Border.bottom > bottom )
-                        bottom = top + control.children[b].Inside.y + control.children[b].height + control.Border.top + control.Border.bottom;
+                    if( top + control.children[b].Inside.y + control.children[b].height + border.top + border.bottom > bottom )
+                        bottom = top + control.children[b].Inside.y + control.children[b].height + border.top + border.bottom;
         }
         if(control.clip === true){
-            if( right - left -control.Border.left-control.Border.right < 2)
+            if( right - left -border.left-border.right < 2)
             {
                 if( transformation.left )left = control.Absolute.x;
                 if( transformation.right )right = control.Absolute.x + control.width;
             }
-            if( bottom - top -control.Border.top-control.Border.bottom < 2)
+            if( bottom - top -border.top-border.bottom < 2)
             {
                 if( transformation.top )top = control.Absolute.y;
                 if( transformation.bottom )bottom = control.Absolute.y + control.height;
@@ -265,16 +266,16 @@ class Resize {
             let ratio_width = width / control.width;
             let ratio_height = height / control.height;
 
-            let ratio_size = control.Transformation.Scale.minimumScale( {width:ratio_width, height:ratio_height} );
+            let ratio_size = control.Scale.minimumScale( {width:ratio_width, height:ratio_height} );
             if(transformation.left && ratio_size.width === 1)left = control.Absolute.x;
             if(transformation.top && ratio_size.height === 1)top = control.Absolute.y;
             if(transformation.left || transformation.top)
-                control.Transformation.Scale.moveToScale(left, top);
-            control.Transformation.Scale.to(ratio_size.width, ratio_size.height);
+                control.Scale.moveToScale(left, top);
+            control.Scale.to(ratio_size.width, ratio_size.height);
         }
         else{
             if(transformation.left || transformation.top)
-                control.Transformation.Move.to(left, top);
+                control.Move.to(left, top);
             this.to(right - left, bottom - top);
         }
     }
@@ -285,16 +286,17 @@ class Resize {
      */
     to(width, height=width){
         const control = this.control;
+        const border = control.Border;
         control.width = width;
         control.height = height;
 
         if(control.clip === true){
-            control.Draw.clipResize(control.width-control.Border.left-control.Border.right, control.height-control.Border.top-control.Border.bottom);
+            //control.Draw.clipResize(control.width - border.left - border.right, control.height - border.top - border.bottom);
         }
 
         if( control.children !== null )
             for(let i = 0; i < control.children.length; i++)
-                control.children[i].Transformation.Resize.parentResize();
+                control.children[i].Resize.parentResize();
     }
     parentResize(){}
 }
@@ -326,16 +328,16 @@ class ResizeForm extends Resize{
             var ratio_width = width / control.width;
             var ratio_height = height / control.height;
 
-            var ratio_size = control.Transformation.Scale.minimumScale( {width:ratio_width, height:ratio_height} );
+            var ratio_size = control.Scale.minimumScale( {width:ratio_width, height:ratio_height} );
             if(transformation.left && ratio_size.width == 1)left = control.Inside.x;
             if(transformation.top && ratio_size.height == 1)top = control.Inside.y;
             if(transformation.left || transformation.top)
-                control.Transformation.Scale.moveToScale(left, top);
-            control.Transformation.Scale.to(ratio_size.width, ratio_size.height);
+                control.Scale.moveToScale(left, top);
+            control.Scale.to(ratio_size.width, ratio_size.height);
         }
         else{
             if(transformation.left || transformation.top)
-                control.Transformation.Move.to(left, top);
+                control.Move.to(left, top);
             this.to(right - left, bottom - top);
         }
     };
@@ -351,7 +353,7 @@ class ResizeForm extends Resize{
 
         if( control.children != null )
             for(var i = 0; i < control.children.length; i++)
-                control.children[i].Transformation.Resize.parentResize();
+                control.children[i].Resize.parentResize();
     };
 }
 
@@ -379,20 +381,21 @@ class Scale {
      */
     to(ratio_width, ratio_height){
         const control = this.control;
+        const border = control.Border;
         control.width = control.width * ratio_width;
         control.height = control.height * ratio_height;
 
-        control.Border.left = control.Border.left * ratio_width;
-        control.Border.right = control.Border.right * ratio_width;
-        control.Border.top = control.Border.top * ratio_height;
-        control.Border.bottom = control.Border.bottom * ratio_height;
+        border.left = border.left * ratio_width;
+        border.right = border.right * ratio_width;
+        border.top = border.top * ratio_height;
+        border.bottom = border.bottom * ratio_height;
 
         if(control.clip === true)
-            control.Draw.clipResize(control.width-control.Border.left-control.Border.right, control.height-control.Border.top-control.Border.bottom);
+            //control.Draw.clipResize(control.width - border.left - border.right, control.height - border.top - border.bottom);
 
         if( control.children !== null )
             for(let i = 0; i < control.children.length; i++)
-                control.children[i].Transformation.Scale.parentScale(ratio_width, ratio_height);
+                control.children[i].Scale.parentScale(ratio_width, ratio_height);
     }
     /**
      * Déplace le contrôle dans le repère de l'échelle (recalcule `Inside` et `x/y`).
@@ -400,8 +403,8 @@ class Scale {
     moveToScale(x, y){
         const control = this.control;
         const parent = control.parent;
-        control.Inside.x = parent === null ? x : x - parent.x-parent.Border.left;
-        control.Inside.y = parent === null ? y : y - parent.y-parent.Border.top;
+        control.Inside.x = parent === null ? x : x - parent.Absolute.x - parent.Border.left;
+        control.Inside.y = parent === null ? y : y - parent.Absolute.y - parent.Border.top;
         control.x = x;
         control.y = y;
         control.Absolute.x = x;
@@ -414,7 +417,7 @@ class Scale {
     parentScale(ratio_width, ratio_height){
         const control = this.control;
         const parent = control.parent;
-        this.moveToScale(parent.x+parent.Border.left+(control.Inside.x*ratio_width), parent.y+parent.Border.top+(control.Inside.y*ratio_height) );
+        this.moveToScale(parent.Absolute.x + parent.Border.left + (control.Inside.x * ratio_width), parent.Absolute.y + parent.Border.top + (control.Inside.y * ratio_height) );
         this.to(ratio_width, ratio_height);
     }
     /**
@@ -425,9 +428,10 @@ class Scale {
      */
     minimumScale(ratio_size){
         const control = this.control;
+        const border = control.Border;
         if(control.clip === true){
-            if( (control.width-control.Border.left-control.Border.right) * ratio_size.width < 2)ratio_size.width = 1;
-            if( (control.height-control.Border.top-control.Border.bottom) * ratio_size.height < 2)ratio_size.height = 1;
+            if( (control.width-border.left-border.right) * ratio_size.width < 2)ratio_size.width = 1;
+            if( (control.height-border.top-border.bottom) * ratio_size.height < 2)ratio_size.height = 1;
         }
         if(control.canResize && control.width * ratio_size.width < transformation.border*2)ratio_size.width = 1;
         else if(control.width * ratio_size.width < 2)ratio_size.width = 1;
@@ -435,7 +439,7 @@ class Scale {
         else if(control.height * ratio_size.height < 2)ratio_size.height = 1;
         if( control.children !== null )
             for(let i = 0; i < control.children.length; i++)
-                ratio_size = control.children[i].Transformation.Scale.minimumScale(ratio_size);
+                ratio_size = control.children[i].Scale.minimumScale(ratio_size);
         return ratio_size;
     }
 
@@ -450,26 +454,27 @@ class ScaleForm extends Scale{
      */
     to(ratio_width, ratio_height){
         const control = this.control;
+        const border = control.Border;
         control.paint.resize(control.width*ratio_width, control.height*ratio_height);
 
         control.width = control.width * ratio_width;
         control.height = control.height * ratio_height;
 
-        control.Border.left = control.Border.left * ratio_width;
-        control.Border.right = control.Border.right * ratio_width;
-        control.Border.top = control.Border.top * ratio_height;
-        control.Border.bottom = control.Border.bottom * ratio_height;
+        border.left = border.left * ratio_width;
+        border.right = border.right * ratio_width;
+        border.top = border.top * ratio_height;
+        border.bottom = border.bottom * ratio_height;
 
         if( control.children != null )
             for(var i = 0; i < control.children.length; i++)
-                control.children[i].Transformation.Scale.parentScale(ratio_width, ratio_height);
+                control.children[i].Scale.parentScale(ratio_width, ratio_height);
     };
 
     moveToScale(x, y){
         const control = this.control;
         const parent = control.parent;
-        control.Inside.x = parent === null ? x : x - parent.x-parent.Border.left;
-        control.Inside.y = parent === null ? y : y - parent.y-parent.Border.top;
+        control.Inside.x = parent === null ? x : x - parent.Absolute.x - parent.Border.left;
+        control.Inside.y = parent === null ? y : y - parent.Absolute.y - parent.Border.top;
         control.paint.move(x, y);
     };
 
@@ -504,8 +509,9 @@ class Transformation {
             transformation.offsetX = mouse.x - control.form.Inside.x - control.Absolute.x;
             transformation.offsetY = mouse.y - control.form.Inside.y - control.Absolute.y;
         }
-        else if ( control.parent !== null )
+        else if ( control.parent !== null ){
             control.parent.Transformation.on();
+        }
     }
 }
 

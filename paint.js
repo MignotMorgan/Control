@@ -91,6 +91,18 @@ class PaintCanvas extends Paint{
     }
     save(){ this.context.save(); }
     restore(){ this.context.restore(); }
+        /**
+     * Libère les ressources associées (détache le canvas du DOM).
+     */
+    dispose(){
+        try{
+            if(this.canvas && this.canvas.parentNode){
+                this.canvas.parentNode.removeChild(this.canvas);
+            }
+        } catch(_){}
+        this.canvas = null;
+        this.context = null;
+    }
     /**
      * Réinitialise les paramètres graphiques du contexte 2D aux valeurs par défaut
      * (couleurs, police, alpha, jonctions de lignes, etc.).
@@ -177,8 +189,9 @@ class PaintCanvas extends Paint{
     /**
      * Trace un rectangle en contour simple.
      */
-    borderRectangle(x, y, width, height, color = "black"){
+    borderRectangle(x, y, width, height, color = "black", lineWidth = 1){
         this.context.strokeStyle = color;
+        this.context.lineWidth = lineWidth;
         this.context.strokeRect(x, y, width, height);
     }
     /**
@@ -356,61 +369,143 @@ class PaintCanvas extends Paint{
             ctx.restore();
         }
     }
+
+    drawImage(image, x, y, width, height){
+        this.context.drawImage(image, x, y, width, height);
+    }
+
+
+
+
+
+    
     /**
      * Crée (et met en cache) un pattern Canvas à partir d'une image.
-     * Le cache évite de recréer le pattern à chaque frame.
+     *
+     * Définitions:
+     * - «pattern» (CanvasPattern): ressource répétable utilisée comme fillStyle/strokeStyle.
+     *   Elle permet de remplir des surfaces avec une image répétée selon un mode.
+     * - «repeat» (mode de répétition): 'repeat' | 'repeat-x' | 'repeat-y' | 'no-repeat'.
+     *
+     * Caching:
+     * - Un cache mémoire (_patternCache: Map) est utilisé pour éviter d'appeler
+     *   `ctx.createPattern` à chaque frame, ce qui peut être coûteux.
+     * - La clé de cache concatène l'identifiant de l'image (src si présent) et le mode repeat.
+     *
+     * @param {HTMLImageElement|CanvasImageSource} image Image source pour le motif.
+     * @param {'repeat'|'repeat-x'|'repeat-y'|'no-repeat'} [repeat='repeat'] Mode de répétition.
+     * @returns {CanvasPattern|null} Le pattern créé ou récupéré du cache, ou null si échec.
      */
     createPattern(image, repeat = 'repeat'){
         const ctx = this.context;
+        // Clé de cache basée sur l'URL de l'image si disponible, sinon stringification du ref
         const key = (image && image.src ? image.src : String(image)) + '|' + repeat;
+        // Initialisation paresseuse du cache
         if(!this._patternCache) this._patternCache = new Map();
+        // Retour immédiat si déjà en cache
         if(this._patternCache.has(key)) return this._patternCache.get(key);
+        // Création du CanvasPattern via l'API 2D
         const pat = ctx.createPattern(image, repeat);
+        // Mémorisation pour réutilisation ultérieure
         if(pat) this._patternCache.set(key, pat);
         return pat;
     }
     /**
      * Remplit un rectangle avec un pattern d'image répété.
-     * Gère un offset (scroll) pour les animations de motif.
+     *
+     * Définitions:
+     * - «offsetX/offsetY»: décalage appliqué au repère avant le remplissage, permettant
+     *   d'animer un motif (effet de scroll) sans recalculer le pattern.
+     * - `ctx.translate(ax, ay)`: transforme le repère courant; combiné avec `fillRect` centré
+     *   sur (-offsetX, -offsetY) pour que le motif apparaisse décalé visuellement.
+     *
+     * Séquence graphique:
+     * 1) save: sauvegarde l'état du contexte (matrice, styles…)
+     * 2) translate: applique le décalage (offset)
+     * 3) fillStyle = pattern: affecte le motif comme style de remplissage
+     * 4) fillRect: remplit le rectangle
+     * 5) restore: restaure l'état (annule translate et fillStyle)
+     *
+     * @param {HTMLImageElement|CanvasImageSource} image Image source pour le motif.
+     * @param {number} x Position X du rectangle à remplir.
+     * @param {number} y Position Y du rectangle à remplir.
+     * @param {number} w Largeur du rectangle.
+     * @param {number} h Hauteur du rectangle.
+     * @param {{repeat?: 'repeat'|'repeat-x'|'repeat-y'|'no-repeat', offsetX?: number, offsetY?: number}} [options]
+     *   Options de répétition et de décalage.
      */
     drawPatternImage(image, x, y, w, h, options = {}){
         const { repeat = 'repeat', offsetX = 0, offsetY = 0 } = options;
         const ctx = this.context;
+        // Récupère le CanvasPattern (via cache); si indisponible, on ne dessine pas
         const pat = this.createPattern(image, repeat);
         if(!pat){ return; }
+        // Préserve l'état graphique (matrice, styles)
         ctx.save();
+        // Applique le décalage: on translate le repère de (x+offsetX, y+offsetY)
         ctx.translate(x + offsetX, y + offsetY);
+        // Définit le style de remplissage au pattern créé
         ctx.fillStyle = pat;
+        // Remplissage du rectangle contre-translaté pour que l'origine visuelle corresponde à (x,y)
         ctx.fillRect(-offsetX, -offsetY, w, h);
+        // Restaure l'état initial
         ctx.restore();
     }
     /**
-     * Dessine une image ajustée dans un rectangle selon un mode:
-     * - stretch: occupe exactement (w,h)
-     * - cover: couvre sans bandes (peut rogner)
-     * - contain: tout visible (peut laisser des bandes)
-     * - none: taille originale
+     * Dessine une image ajustée dans un rectangle selon un mode d'adaptation.
+     *
+     * Définitions:
+     * - «ratio d'aspect» (aspect ratio): rapport largeur/hauteur. Conserver le ratio évite la déformation.
+     * - «rectangle source»: dimensions réelles de l'image (sw, sh).
+     * - «rectangle destination»: zone cible à l'écran (w, h) positionnée en (x, y).
+     *
+     * Modes supportés:
+     * - stretch: remplit exactement (w,h), sans conserver le ratio (peut déformer).
+     * - cover: couvre tout (w,h) en conservant le ratio; peut rogner les bords pour éviter les bandes.
+     * - contain: montre toute l'image en conservant le ratio; peut laisser des bandes (letterboxing/pillarboxing).
+     * - none: dessine à la taille d'origine de l'image en haut-gauche (x,y).
+     *
+     * Remarques:
+     * - Le centrage est appliqué pour 'cover' et 'contain' afin de répartir symétriquement le rognage/les bandes.
+     * - Les dimensions source utilisent `naturalWidth/Height` (préférées) avec repli sur `width/height`.
+     *
+     * @param {HTMLImageElement|CanvasImageSource} image Image à dessiner.
+     * @param {number} x Position X du rectangle destination.
+     * @param {number} y Position Y du rectangle destination.
+     * @param {number} w Largeur du rectangle destination.
+     * @param {number} h Hauteur du rectangle destination.
+     * @param {'stretch'|'cover'|'contain'|'none'} [mode='stretch'] Mode d'adaptation.
      */
     drawImageFitting(image, x, y, w, h, mode = 'stretch'){
         const ctx = this.context;
+        // Dimensions source: privilégie naturalWidth/Height (dimensions intrinsèques du bitmap)
         const sw = image.naturalWidth || image.width;
         const sh = image.naturalHeight || image.height;
         if(!sw || !sh) return;
         if(mode === 'stretch'){
+            // Étirement exact au rectangle destination: pas de conservation du ratio
             ctx.drawImage(image, x, y, w, h);
             return;
         }
         if(mode === 'none'){
+            // Aucun ajustement: dessine à la taille native en (x,y)
             ctx.drawImage(image, x, y);
             return;
         }
+        // sr: ratio d'aspect source (image). dr: ratio destination (rectangle)
         const sr = sw / sh; const dr = w / h;
         let dw, dh, dx, dy;
         if(mode === 'cover'){
+            // «cover»: remplir entièrement (w,h) en conservant le ratio
+            // Si l'image est plus «large» (sr > dr), on fixe la hauteur, on calcule la largeur proportionnelle
+            // sinon on fixe la largeur et on calcule la hauteur proportionnelle.
             if(sr > dr){ dh = h; dw = dh * sr; } else { dw = w; dh = dw / sr; }
         } else { // contain
+            // «contain»: tout visible; peut laisser des bandes
+            // Si l'image est plus «large» (sr > dr), on s'aligne sur la largeur; sinon sur la hauteur.
             if(sr > dr){ dw = w; dh = dw / sr; } else { dh = h; dw = dh * sr; }
         }
+        // Centre l'image calculée (dw,dh) dans le rectangle (w,h)
         dx = x + (w - dw) / 2;
         dy = y + (h - dh) / 2;
         ctx.drawImage(image, dx, dy, dw, dh);
@@ -443,17 +538,5 @@ class PaintCanvas extends Paint{
         if(dL > 0 && midSH > 0 && midDH > 0) ctx.drawImage(image, 0, sT, sL, midSH, x, y + dT, dL, midDH);
         if(dR > 0 && midSH > 0 && midDH > 0) ctx.drawImage(image, sw - sR, sT, sR, midSH, x + w - dR, y + dT, dR, midDH);
         if(fillCenter && midSW > 0 && midSH > 0 && midDW > 0 && midDH > 0) ctx.drawImage(image, sL, sT, midSW, midSH, x + dL, y + dT, midDW, midDH);
-    }
-    /**
-     * Libère les ressources associées (détache le canvas du DOM).
-     */
-    dispose(){
-        try{
-            if(this.canvas && this.canvas.parentNode){
-                this.canvas.parentNode.removeChild(this.canvas);
-            }
-        } catch(_){}
-        this.canvas = null;
-        this.context = null;
     }
 }    

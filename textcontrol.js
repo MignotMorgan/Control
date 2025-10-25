@@ -489,9 +489,15 @@ class TextLayout {
  */
 class DrawTextControl extends Draw{
     constructor(control){ super(control); }
-    draw(paint, x, y, width, height){
+    draw(){//paint, x, y, width, height){
+        const control = this.control;
+        const paint = control.form.Paint;
+        const x = control.Absolute.x;
+        const y = control.Absolute.y;
+        const width = control.width;
+        const height = control.height;
         // Cadre standard via super
-        super.draw(paint, x, y, width, height);
+        super.draw();//paint, x, y, width, height);
         // Zone intérieure
         const innerX = x + this.control.Border.left + this.control.textLayout.paddingLeft;
         const innerY = y + this.control.Border.top + this.control.textLayout.paddingTop;

@@ -112,6 +112,7 @@ window.onload = ()=>{
     themedBgCtrl.id = "themedBg";
     themedBgCtrl.canMove = true;
     themedBgCtrl.canResize = true;
+    themedBgCtrl.Draw.Theme.backgroundImage = "Background.jpg";
     form.add(themedBgCtrl);
 
     const themedBorderCtrl = factory.create(1200, 400, 500, 350);
@@ -119,7 +120,7 @@ window.onload = ()=>{
     themedBorderCtrl.canMove = true;
     themedBorderCtrl.canResize = true;
     form.add(themedBorderCtrl);
-
+/*
     // Chargement des images locales (assurez-vous que Background.jpg et Border.png sont à côté de votre page)
     const imgBg = new Image();
     const imgBorder = new Image();
@@ -171,5 +172,5 @@ window.onload = ()=>{
         themedBorderCtrl.Border.bottom = w;
         themedBorderCtrl.Border.left = w;
     };
- 
+ */
 };

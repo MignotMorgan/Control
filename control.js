@@ -37,7 +37,6 @@ class Control {
     get Absolute(){ return this.Geometric.Rectangle.Absolute; }
     get Inside(){ return this.Geometric.Rectangle.Inside; }
     get Border(){ return this.Geometric.Rectangle.Border; }
-    //get Draw(){ return this.Geometric.Draw; }
     get Drag(){ return this.Lineage.Drag; }
     get Drop(){ return this.Lineage.Drop; }
     get Transformation(){ return this.Geometric.Transformation; }
