@@ -9,14 +9,6 @@ let dragdrop = {armed:false, active:false, control:null, parent:null, target:nul
 let transformation = {control:null, offsetX:0, offsetY:0, resize:false, border:5, left:false, top:false, right:false, bottom:false, lock:false};
 let focus = null;
 
-/**
- * Représente un contrôle visuel rectangulaire pouvant contenir des enfants.
- * Responsabilités:
- * - Gestion géométrique via `Geometric` (Rectangle, Transformation, Draw)
- * - Gestion hiérarchique via `Lineage` (parent, enfants, z-order)
- * - Gestion des entrées via `Input` (Mouse/Keyboard)
- * Propriétés usuelles exposées en getters/setters: x, y, width, height, canMove/Resize/Scale/Drag/Drop
- */
 class Control {
     constructor() {
         this.Geometric;
@@ -71,8 +63,8 @@ class Control {
     get paint(){return this.Draw.Paint;}
     get parent(){return this.Lineage.parent;}
     get children(){return this.Lineage.children;}   
-    get right(){return this.Absolute.x + this.width;};
-    get bottom(){return this.Absolute.y + this.height;};
+    get right(){return this.Absolute.x + this.width;}
+    get bottom(){return this.Absolute.y + this.height;}
 
     get clip(){ return this.Draw.clip; }
     set clip(value){ this.Draw.clip = value; }
@@ -82,8 +74,7 @@ class Control {
     add(control){ this.Lineage.add(control); }
     remove(control){ return this.Lineage.removeChild(control); }
     destroy(){ this.Lineage.destroy(); }
-    onDraw(context, x, y){this.Draw.execute(); }//context, x, y); }
-    //onDraw(context, x, y){ this.Geometric.Draw.execute(context, x, y); }
+    onDraw(context, x, y){this.Draw.execute(); }
 
     onFocus(){
         if( this.canFocus ){ focus = this; this.Lineage.firstPosition(null); }
@@ -91,17 +82,10 @@ class Control {
     }
 }
 
-/**
- * Racine d'affichage: un contrôle spécialisé qui possède un support de rendu (`paint`).
- * Sert de "surface" principale pour dessiner la scène et héberger l'arbre de contrôles.
- */
 class Form extends Control {
     constructor() {
         super();
-    
         controls[controls.length] = this;
-
-        //this.paint = null;
     }
     initialize(){
         super.initialize();

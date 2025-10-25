@@ -1,7 +1,3 @@
-/**
- * Représente une position 2D absolue (coordonnées en pixels)
- * Utilisée pour la position de la figure (`Location`) et la position interne (`Inside`).
- */
 class Location {
     constructor(x, y) {
         this.x = x;
@@ -9,9 +5,6 @@ class Location {
     }
 }
 
-/**
- * Représente la taille (largeur x hauteur) en pixels d'une figure.
- */
 class Size {
     constructor(width, height) {
         this.width = width;
@@ -19,9 +12,6 @@ class Size {
     }
 }
 
-/**
- * Représente l'épaisseur des bordures d'un contrôle (haut, droite, bas, gauche).
- */
 class Border {
     constructor(top, right, bottom, left) {
         this.top = top;
@@ -31,16 +21,6 @@ class Border {
     }
 }
 
-/**
- * Modèle de base d'une figure rectangulaire liée à un contrôle.
- * - Location: position absolue du contrôle dans la Form.                               Position dans le canvas. (Draw)
- * - Inside: position interne du contenu (relative à la zone intérieure du parent).     Position dans le Control parent. (Transformation : Move, Resize, Scale)
-
-* - !!!!! Inverser Location et Inside. Location = position dans le parent. Absolute = position dans le canvas. (plus intuitif)
- 
-* - Size: taille du contrôle.
-* - Border: épaisseur des bordures (définit la zone intérieure visible utile).
-*/
 class Rectangle {
     constructor(control){
         this.control = control;
@@ -65,8 +45,6 @@ class Rectangle {
         const size = this.Size;
         const border = this.Border;
         return {
-            //x: control.form.Inside.x + location.x + border.left,
-            //y: control.form.Inside.y + location.y + border.top,
             x: location.x + border.left,
             y: location.y + border.top,
             width: size.width - border.left - border.right,

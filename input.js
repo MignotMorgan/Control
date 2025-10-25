@@ -1,15 +1,12 @@
-// Gestion de la souris pour un contrôle
 class Mouse {
-    constructor(control) {
+    constructor(control){
         this.control = control;
     }
     hover(){
         const control = this.control;
         const form = control.form;
         const children = control.children;
-        // En mode drag interne, on ignore le contrôle déplacé et ses descendants pour le survol
         if(typeof dragdrop !== 'undefined' && dragdrop.active){
-            // Teste si this.control est le contrôle draggué ou un descendant
             let isDraggedOrDesc = false;
             if(dragdrop.control){
                 if(control === dragdrop.control){
@@ -22,7 +19,7 @@ class Mouse {
                     }
                 }
             }
-            if(isDraggedOrDesc) return; // ne pas capturer le hover, laisse une chance aux éléments dessous
+            if(isDraggedOrDesc) return;
         }
 
         mousehover.selected = control;
@@ -34,10 +31,8 @@ class Mouse {
         ))
         {
             if( children !== null )
-                for(var i = 0; i < children.length; i++)
-                {       
-                    if ( children[i].enable && children[i].containMouse() )
-                    {
+                for(var i = 0; i < children.length; i++){       
+                    if ( children[i].enable && children[i].containMouse() ){
                         children[i].Mouse.hover();
                         return;
                     }
@@ -50,24 +45,18 @@ class Mouse {
     clickLeftUp(){};
     clickRight(){};
     clickRightUp(){};
-    // Appelé lors d'un mouvement de molette. Par défaut ne fait rien.
-    // deltaY > 0 = défilement vers le bas, deltaY < 0 = vers le haut (convention standard)
-    // deltaX peut être utilisé pour le défilement horizontal.
     wheel(deltaX, deltaY){ }
 }
 
-// Gestion du clavier pour un contrôle
 class Keyboard {
     constructor(control) {
         this.control = control;
     }
-    // Appelé quand une touche est enfoncée
-    onKeyDown(modifiers){ /* surcharge dans les contrôles si besoin */ }
-    // Appelé quand une touche est relâchée
-    onKeyUp(modifiers){ /* surcharge dans les contrôles si besoin */ }
+    onKeyDown(){ }
+    onKeyUp(){ }
 }
 class Input {
-    constructor(control) {
+    constructor(control){
         this.control = control;
         this.Mouse;
         this.Keyboard;
