@@ -22,14 +22,14 @@ class Factory{
         }
     createRectangle(control, x, y, width, height, top, right, bottom, left){
         let rectangle = new Rectangle(control);
-        rectangle.Location = this.createLocation(x, y);
-        rectangle.Absolute = this.createLocation(x, y);
-        rectangle.Inside = this.createLocation(x, y);
+        rectangle.Location = this.createPoint(x, y);
+        rectangle.Absolute = this.createPoint(x, y);
+        rectangle.Inside = this.createPoint(x, y);
         rectangle.Size = this.createSize(width, height);
         rectangle.Border = this.createBorder(top, right, bottom, left);
         return rectangle;
     }
-    createLocation(x, y){ return new Location(x, y); }
+    createPoint(x, y){ return new Point(x, y); }
     createSize(width, height){ return new Size(width, height); }
     createBorder(top, right, bottom, left){ return new Border(top, right, bottom, left); }
 
@@ -66,23 +66,21 @@ class Factory{
 
 }
 
-
-
   class FactoryForm extends Factory{  
     createControl(){return new Form(); }
     createPaint(x, y, width, height, hide = false){ return new PaintCanvas(x, y, width, height, hide);}
     createRectangle(control, x, y, width, height, top, right, bottom, left){
         let rectangle = new Rectangle(control);
-        rectangle.Location = this.createLocation(0, 0);
-        rectangle.Absolute = this.createLocation(0, 0);
-        rectangle.Inside = this.createLocation(x, y);
+        rectangle.Location = this.createPoint(0, 0);
+        rectangle.Absolute = this.createPoint(0, 0);
+        rectangle.Inside = this.createPoint(x, y);
         rectangle.Size = this.createSize(width, height);
         rectangle.Border = this.createBorder(top, right, bottom, left);
         return rectangle;
     }
     createDraw(control){
         const draw = new DrawForm(control);
-        const paint = this.createPaint(control.Inside.x, control.Inside.y, control.width, control.height);
+        const paint = this.createPaint(control.Inside.x, control.Inside.y, control.Size.width, control.Size.height);
         draw.Paint = paint;
         return draw;
     }

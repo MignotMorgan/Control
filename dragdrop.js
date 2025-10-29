@@ -7,9 +7,7 @@ class Drag {
     set active(value){ this.#active = !!value; }
 
     start(){}
-
     validate(target){ return true; }
-
     enter(){}
     over(){}
     leave(){}
@@ -26,7 +24,7 @@ class Drop {
 
     target(){
         if(this.active){ return this.control; }
-        else if(this.control.parent){ return this.control.parent.Drop.target(); }
+        else if(!this.control.canMove && this.control.parent){ return this.control.parent.Drop.target(); }
         else{ return null; }
     }
     validate(source){ return true; }

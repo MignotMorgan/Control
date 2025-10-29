@@ -13,19 +13,18 @@ class ThemeImages{
     }
 }
 
-
 class Theme {
     #name;
     constructor(){
         this.#name = "default";
         this.background = {
             color: "#ffffff", 
-            image:{Url: "", size: 'stretch'}, 
+            image:{Url: "", mode: 'stretch'}, 
             rectangle:{ color: "#000", lineWidth: 2 },
             border: { color: "#cf2929ff", rectangle:{ color: "#000", lineWidth: 2} }
         };
 
-        if(this.background.image.Url !== "") ThemeImages.add(this.background.imageUrl);
+        if(this.background.image.Url !== "") ThemeImages.add(this.background.image.Url);
         this.drag = { color: "#2979ff", alpha: 0.5 };
 
     }

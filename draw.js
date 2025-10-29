@@ -27,9 +27,9 @@ class Draw {
     drawChildren(){
         const control = this.control;
         const children = control.children;
-        if(children != null)
-            for(let i = 0; i < children.length; i++)
-                children[i].Draw.execute();
+        //if(children != null)
+        for(let i = 0; i < children.length; i++)
+            children[i].Draw.execute();
     }
 
     draw(){
@@ -54,7 +54,7 @@ class Draw {
         const theme = this.Theme.drag;
         paint.withAlpha(theme.alpha, () => {
             this.draw();
-            paint.drawRectangle(control.x, control.y, control.width, control.height, theme.color);
+            paint.drawRectangle(control.Absolute.x, control.Absolute.y, control.Size.width, control.Size.height, theme.color);
         });
     }
 
@@ -66,7 +66,7 @@ class Draw {
 
         paint.drawRectangle(rect.x, rect.y, rect.width, rect.height, theme.color);
         if(theme.image.Url){
-            this.drawBackgroundImage( rect.x, rect.y, rect.width, rect.height, this.Theme.backgroundImage);
+            this.drawBackgroundImage( rect.x, rect.y, rect.width, rect.height, this.Theme.backgroundImage, theme.image.mode);
         }
         if (theme.rectangle.lineWidth > 0){
             paint.borderRectangleStyled(rect.x, rect.y, rect.width, rect.height, { color: theme.rectangle.color, lineWidth: theme.rectangle.lineWidth, style: theme.rectangle.style });
@@ -105,8 +105,8 @@ class Draw {
         const border = control.Border;
         const x = control.Absolute.x;
         const y = control.Absolute.y;   
-        const width = control.width;
-        const height = control.height;
+        const width = control.Size.width;
+        const height = control.Size.height;
         const theme = this.Theme.background;
         paint.drawRectangle(x, y, width, border.top, theme.border.color);
         paint.drawRectangle(x, y, border.left, height, theme.border.color);
@@ -121,8 +121,8 @@ class Draw {
         const paint = this.Paint;
         const x = control.Absolute.x;
         const y = control.Absolute.y;
-        const width = control.width;
-        const height = control.height;
+        const width = control.Size.width;
+        const height = control.Size.height;
 
         const hs = 8;
         const half = Math.floor(hs/2);
@@ -166,11 +166,19 @@ class DrawForm extends Draw{
         let ix = 20
         let iy = 20;
         paint.drawText(ix, iy, "souris : " + mouse.x + " : " + mouse.y + " temps : " + mouse.time);
+        iy += 20;
+        if (focus !== null){
+            paint.drawText(ix, iy, "focus : " + focus.id );
+        }
+        else{
+            paint.drawText(ix, iy, "focus : null");
+        }
+        //iy += 20;
         if(mousehover.control != null && mousehover.selected != null){
             iy += 20;
             paint.drawText(ix, iy, "souris dans le contrôle : " + (mouse.x - mousehover.control.form.Inside.x - mousehover.control.Absolute.x) + " : " + (mouse.y - mousehover.control.form.Inside.y - mousehover.control.Absolute.y));
             iy += 20;
-            paint.drawText(ix, iy, "mousehover : " + mousehover.control.id + " X: " + mousehover.control.Inside.x + " Y: " + mousehover.control.Inside.y + " width: " + mousehover.control.width + " height: " + mousehover.control.height + " parent: " + (mousehover.control.parent === null ? "null" : mousehover.control.parent.id));
+            paint.drawText(ix, iy, "mousehover : " + mousehover.control.id + " X: " + mousehover.control.Inside.x + " Y: " + mousehover.control.Inside.y + " width: " + mousehover.control.Size.width + " height: " + mousehover.control.Size.height + " parent: " + (mousehover.control.parent === null ? "null" : mousehover.control.parent.id));
         }
         iy += 20;
         if(transformation.control != null)
@@ -185,7 +193,7 @@ class DrawForm extends Draw{
         const control = this.control;
         const children = control.children;
         if( children != null )
-            for(let i = children.length - 1; i >= 0 ; i--)
+            for(let i = 0; i < children.length; i++)
                 if ( children[i] != null && children[i].visible )
                     children[i].Draw.execute();
     

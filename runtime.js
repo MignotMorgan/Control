@@ -34,7 +34,7 @@ function onMouseMove(e){
 
     mousehover.selected = null;
     for(let i = controls.length - 1; i >= 0; i--)
-        if( controls[i].contains(mouse.x, mouse.y) )
+        if( controls[i].containMouse() )
             controls[i].Mouse.hover();
 
     if( mousehover.control != mousehover.selected ){
@@ -58,17 +58,17 @@ function onMouseMove(e){
         if( mousehover.control != null && mousehover.control.canResize ){
             if(mouse.x <= mousehover.control.form.Inside.x + mousehover.control.Absolute.x + transformation.border)transformation.left = true;
             if(mouse.y <= mousehover.control.form.Inside.y + mousehover.control.Absolute.y + transformation.border)transformation.top = true;
-            if(mouse.x >= mousehover.control.form.Inside.x + mousehover.control.Absolute.x + mousehover.control.width - transformation.border)transformation.right = true;
-            if(mouse.y >= mousehover.control.form.Inside.y + mousehover.control.Absolute.y + mousehover.control.height - transformation.border)transformation.bottom = true;
+            if(mouse.x >= mousehover.control.form.Inside.x + mousehover.control.Absolute.x + mousehover.control.Size.width - transformation.border)transformation.right = true;
+            if(mouse.y >= mousehover.control.form.Inside.y + mousehover.control.Absolute.y + mousehover.control.Size.height - transformation.border)transformation.bottom = true;
         }
     }
     else if( transformation.resize ){
         if(transformation.lock)return;
         transformation.lock = true;
-        transformation.control.Transformation.Resize.on();
+        transformation.control.Resize.on();
         transformation.lock = false;
     }
-    else { transformation.control.Transformation.Move.on(); }
+    else { transformation.control.Move.on(); }
 
     let cursor = "default";
     if(transformation.control == null && mousehover.control && mousehover.control.canResize){
@@ -96,20 +96,19 @@ function onMouseDownLeft(e){
 function onMouseUpLeft(e){
     transformation.control = null;
     transformation.resize = false;
-    let consumedClick = false;
+    //let consumedClick = false;
 
     if(dragdrop.armed && !dragdrop.active && dragdrop.control){
         dragdrop.control.Mouse.clickLeft();
         dragdrop.control.Mouse.clickLeftUp();
-        consumedClick = true;
+    //    consumedClick = true;
         DragDropManager.reset();
     }
-  
-    if( !consumedClick && mousehover.control != null)
-        mousehover.control.Mouse.clickLeftUp();
-
-    if(dragdrop.active && dragdrop.control){
+    else if(dragdrop.active && dragdrop.control){
         DragDropManager.dropControl();
+    }
+    else if(mousehover.control != null){
+        mousehover.control.Mouse.clickLeftUp();
     }
 
     return false;

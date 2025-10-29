@@ -189,14 +189,14 @@ class TextLayout {
         this.paddingTop = 4;
     }
     get innerWidth(){
-        return this.control.width - this.control.Border.left - this.control.Border.right - this.paddingLeft*2;
+        return this.control.Size.width - this.control.Border.left - this.control.Border.right - this.paddingLeft*2;
     }
     ensure(){
         // Calcule (ou réutilise) le découpage en lignes.
         // C'est comme si on coupait un paragraphe trop long pour qu'il tienne dans une boîte.
         const model = this.control.textModel;
         const W = Math.max(0, this.innerWidth);
-        const paint = this.control.form && this.control.form.paint;
+        const paint = this.control.form && this.control.form.Paint;
         // Petite optimisation: si ni le texte ni la largeur n'ont changé, on réutilise le résultat précédent.
         if(this._cache && this._cache.version === model._version && this._cache.width === W) return this._cache;
         paint.save();
@@ -307,7 +307,7 @@ class TextLayout {
                         // On remplit la ligne avec autant de caractères que possible sans dépasser la largeur W
                         while(rest.length > 0){
                             // Utilise la fonction d'aide de Paint (mesure simple) pour trouver un point de coupe raisonnable (max)
-                            let first = this.control.form.paint.cutText(rest, W)[0];
+                            let first = this.control.form.Paint.cutText(rest, W)[0];
                             if(first.length === 0){
                                 // Sécurité: si rien ne rentre, on prend au moins 1 caractère
                                 first = rest.charAt(0);
@@ -332,7 +332,7 @@ class TextLayout {
                                     const hy = (this.control.hyphenChar || '-');
                                     // Réduire first pour que first+hy tienne dans W
                                     let f = first;
-                                    while(f.length > 1 && (this.control.form.paint.measureText ? this.control.form.paint.measureText(f + hy).width : paint.measureText(f + hy).width) > W){
+                                    while(f.length > 1 && (this.control.form.Paint.measureText ? this.control.form.Paint.measureText(f + hy).width : paint.measureText(f + hy).width) > W){
                                         f = f.slice(0, -1);
                                     }
                                     const hyLine = f + hy;
@@ -383,7 +383,7 @@ class TextLayout {
     // Renvoie la position x absolue (écran) du caret à index
     xForIndex(index){
         const c = this.ensure();
-        const paint = this.control.form && this.control.form.paint;
+        const paint = this.control.form && this.control.form.Paint;
         paint.save(); 
         paint.font = this.font;
         const left = this.control.form.Inside.x + this.control.Absolute.x + this.control.Border.left + this.paddingLeft;
@@ -400,7 +400,7 @@ class TextLayout {
     // Calcule l'index caret pour une position x à la ligne lineIdx
     indexForX(lineIdx, x){
         const c = this.ensure();
-        const paint = this.control.form && this.control.form.paint;
+        const paint = this.control.form && this.control.form.Paint;
         paint.save(); 
         paint.font = this.font;        
         const left = this.control.form.Inside.x + this.control.Absolute.x + this.control.Border.left + this.paddingLeft;
@@ -421,7 +421,7 @@ class TextLayout {
         // Convertit une position dans le texte (ex: 10ème caractère) en coordonnées écran (x,y).
         // Cela sert à placer le caret (curseur) exactement où il faut.
         const c = this.ensure();
-        const paint = this.control.form && this.control.form.paint;
+        const paint = this.control.form && this.control.form.Paint;
         paint.save(); 
         paint.font = this.font;        
         let x = this.paddingLeft + this.control.Border.left - (this.control._scrollX||0); // marge intérieure horizontale avec scrollX
@@ -452,7 +452,7 @@ class TextLayout {
         // Fait l'opération inverse: à partir d'une position écran (x,y) où on a cliqué,
         // retrouve l'index du caractère le plus proche dans le texte.
         const c = this.ensure();
-        const paint = this.control.form && this.control.form.paint;
+        const paint = this.control.form && this.control.form.Paint;
         paint.save(); 
         paint.font = this.font;
         // Calcule la zone intérieure (coin supérieur gauche) en coordonnées écran
@@ -494,8 +494,8 @@ class DrawTextControl extends Draw{
         const paint = control.form.Paint;
         const x = control.Absolute.x;
         const y = control.Absolute.y;
-        const width = control.width;
-        const height = control.height;
+        const width = control.Size.width;
+        const height = control.Size.height;
         // Cadre standard via super
         super.draw();//paint, x, y, width, height);
         // Zone intérieure
@@ -590,7 +590,7 @@ class DrawTextControl extends Draw{
                             const ell = "\u2026"; // …
                             const ellW = paint.measureText(ell).width;
                             const room = Math.max(0, remainingWidth - ellW);
-                            const cut = this.control.form.paint.cutText(text, room)[0];
+                            const cut = this.control.form.Paint.cutText(text, room)[0];
                             const drawTxt = cut + ell;
                             paint.drawText(dx, drawY, drawTxt, { color: style.color, font: fontParts.join(" "), underline: style.underline });
                             dx += paint.measureText(drawTxt).width;
@@ -1041,7 +1041,7 @@ class TextControl extends Control{
         // Auto-resize horizontal (optionnel)
         if(this.autoResizeX){
             // largeur maximale des lignes (approx: mesurer le texte brut)
-            const paint = this.form && this.form.paint;
+            const paint = this.form && this.form.Paint;
             if(paint){
                 paint.save();
                 paint.font = this.textLayout.font;
@@ -1185,7 +1185,7 @@ class TextMouse extends Mouse{
             const innerH0 = Math.max(0, c.height - c.Border.top - c.Border.bottom - c.textLayout.paddingTop*2);
             const lines = c.textLayout.ensure().lines;
             // mesurer largeur contenu
-            let contentW = 0; const paint = c.form && c.form.paint; if(paint){ paint.save(); paint.font = c.textLayout.font; for(const L of lines){ contentW = Math.max(contentW, paint.measureText(L.text).width); } paint.restore(); }
+            let contentW = 0; const paint = c.form && c.form.Paint; if(paint){ paint.save(); paint.font = c.textLayout.font; for(const L of lines){ contentW = Math.max(contentW, paint.measureText(L.text).width); } paint.restore(); }
             // recalcul innerH/innerW comme dans draw
             const allowHX = !!c.showScrollbarX && (!!c.scrollX || c.wrap === false);
             const hasHScroll = allowHX && (contentW > innerW0);

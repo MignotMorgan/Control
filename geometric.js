@@ -1,4 +1,4 @@
-class Location {
+class Point {
     constructor(x, y) {
         this.x = x;
         this.y = y;
@@ -34,19 +34,16 @@ class Rectangle {
         return this.contains(mouse.x, mouse.y);
     }
     contains(x, y){
-        const control = this.control;
-        const location = this.Absolute;
-        return ( x > control.form.Inside.x +  location.x && x < control.form.Inside.x + location.x + this.Size.width 
-            && y > control.form.Inside.y + location.y && y < control.form.Inside.y + location.y + this.Size.height );
+        const form = this.control.form;
+        return ( x > form.Inside.x +  this.Absolute.x && x < form.Inside.x + this.Absolute.x + this.Size.width 
+            && y > form.Inside.y + this.Absolute.y && y < form.Inside.y + this.Absolute.y + this.Size.height );
     }
     rectangleBackground(){
-        const control = this.control;
-        const location = this.Absolute;
         const size = this.Size;
         const border = this.Border;
         return {
-            x: location.x + border.left,
-            y: location.y + border.top,
+            x: this.Absolute.x + border.left,
+            y: this.Absolute.y + border.top,
             width: size.width - border.left - border.right,
             height: size.height - border.top - border.bottom
         };

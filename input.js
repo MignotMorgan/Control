@@ -6,21 +6,8 @@ class Mouse {
         const control = this.control;
         const form = control.form;
         const children = control.children;
-        if(typeof dragdrop !== 'undefined' && dragdrop.active){
-            let isDraggedOrDesc = false;
-            if(dragdrop.control){
-                if(control === dragdrop.control){
-                    isDraggedOrDesc = true;
-                } else {
-                    let p = control.parent;
-                    while(p){
-                        if(p === dragdrop.control){ isDraggedOrDesc = true; break; }
-                        p = p.parent;
-                    }
-                }
-            }
-            if(isDraggedOrDesc) return;
-        }
+
+        if(dragdrop.active && dragdrop.control === control) return;
 
         mousehover.selected = control;
 
@@ -30,13 +17,22 @@ class Mouse {
             && mouse.y <= form.Inside.y + control.bottom-control.Border.bottom
         ))
         {
-            if( children !== null )
-                for(var i = 0; i < children.length; i++){       
-                    if ( children[i].enable && children[i].containMouse() ){
-                        children[i].Mouse.hover();
-                        return;
-                    }
+            for(let i = children.length - 1; i >= 0; i--){
+                const child = children[i];
+                if ( child && child.enable && child.containMouse() ){
+                    if(dragdrop.active && dragdrop.control === child)continue;
+                    child.Mouse.hover();
+                    return;
                 }
+            }
+        }
+    }
+    inside(){
+        const control = this.control;
+        const form = control.form;
+        return  {
+            x: mouse.x - form.Inside.x - control.Absolute.x,
+            y: mouse.y - form.Inside.y - control.Absolute.y
         }
     }
     enter(){}

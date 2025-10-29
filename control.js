@@ -15,7 +15,6 @@ class Control {
         this.Draw;
         this.Lineage;
         this.Input;
-
         this.id = "";
         this.enable = true;
         this.visible = true;
@@ -24,10 +23,10 @@ class Control {
     initialize(){}
 
     get Paint(){ return this.Draw.Paint; }
-    set Paint(value){ this.Draw.Paint = value; }
     get Rectangle(){ return this.Geometric.Rectangle; }
     get Absolute(){ return this.Geometric.Rectangle.Absolute; }
     get Inside(){ return this.Geometric.Rectangle.Inside; }
+    get Size(){ return this.Geometric.Rectangle.Size; }
     get Border(){ return this.Geometric.Rectangle.Border; }
     get Drag(){ return this.Lineage.Drag; }
     get Drop(){ return this.Lineage.Drop; }
@@ -38,21 +37,12 @@ class Control {
     get Mouse(){ return this.Input.Mouse; }
     get Keyboard(){ return this.Input.Keyboard; }
 
-    get x(){return this.Geometric.Rectangle.Location.x;}
-    set x(value){this.Geometric.Rectangle.Location.x = value;}
-    get y(){return this.Geometric.Rectangle.Location.y;}
-    set y(value){this.Geometric.Rectangle.Location.y = value;}
-    get width(){return this.Geometric.Rectangle.Size.width;}
-    set width(value){this.Geometric.Rectangle.Size.width = value;}
-    get height(){return this.Geometric.Rectangle.Size.height;}
-    set height(value){this.Geometric.Rectangle.Size.height = value;}
-
-    get canMove(){return this.Geometric.Transformation.Move.active;}
-    set canMove(value){this.Geometric.Transformation.Move.active = value;}
-    get canResize(){return this.Geometric.Transformation.Resize.active;}
-    set canResize(value){this.Geometric.Transformation.Resize.active = value;}
-    get canScale(){return this.Geometric.Transformation.Scale.active;}
-    set canScale(value){this.Geometric.Transformation.Scale.active = value;}
+    get canMove(){ return this.Geometric.Transformation.Move.active;}
+    set canMove(value){ this.Geometric.Transformation.Move.active = value;}
+    get canResize(){ return this.Geometric.Transformation.Resize.active;}
+    set canResize(value){ this.Geometric.Transformation.Resize.active = value;}
+    get canScale(){ return this.Geometric.Transformation.Scale.active;}
+    set canScale(value){ this.Geometric.Transformation.Scale.active = value;}
 
     get canDrag(){ return this.Lineage.Drag.active }
     set canDrag(value){ this.Lineage.Drag.active = !!value }
@@ -60,32 +50,37 @@ class Control {
     set canDrop(value){ this.Lineage.Drop.active = !!value; }
 
     get form(){return this.Lineage.form;}
-    get paint(){return this.Draw.Paint;}
     get parent(){return this.Lineage.parent;}
     get children(){return this.Lineage.children;}   
-    get right(){return this.Absolute.x + this.width;}
-    get bottom(){return this.Absolute.y + this.height;}
+    get right(){return this.Absolute.x + this.Size.width;}
+    get bottom(){return this.Absolute.y + this.Size.height;}
 
     get clip(){ return this.Draw.clip; }
     set clip(value){ this.Draw.clip = value; }
 
+    isForm(){ return this.Lineage.form === this; }
+
     containMouse(){ return this.Geometric.Rectangle.containMouse(); }
     contains(x, y){ return this.Geometric.Rectangle.contains(x, y); }
     add(control){ this.Lineage.add(control); }
-    remove(control){ return this.Lineage.removeChild(control); }
-    destroy(){ this.Lineage.destroy(); }
-    onDraw(context, x, y){this.Draw.execute(); }
+    remove(control){ return this.Lineage.remove(control); }
+    //destroy(){ this.Lineage.destroy(); }
+    onDraw(context, x, y){ this.Draw.execute(); }
 
     onFocus(){
-        if( this.canFocus ){ focus = this; this.Lineage.firstPosition(null); }
-        else if ( this.parent != null ) this.parent.onFocus();
+        if( this.canFocus ){ 
+            focus = this; 
+            if(this.parent != null){ this.parent.Lineage.firstPosition(this); }
+        } else if ( this.parent != null ) {
+            this.parent.onFocus();
+        }
     }
 }
 
 class Form extends Control {
     constructor() {
         super();
-        controls[controls.length] = this;
+        controls.push(this);
     }
     initialize(){
         super.initialize();

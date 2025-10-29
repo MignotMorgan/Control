@@ -27,7 +27,7 @@ class DragDropManager {
     if(!dnd.active){ return; }
     const xForm = mouse.x - control.form.Inside.x - dnd.offsetX;
     const yForm = mouse.y - control.form.Inside.y - dnd.offsetY;
-    control.Transformation.Move.to(xForm, yForm);
+    control.Move.to(xForm, yForm);
     dnd.target = mousehover.control ? mousehover.control.Drop.target() : null;
     if(dnd.target && dnd.target.clip){ this.autoScroll(dnd.target, mouse.x, mouse.y); }
   }
@@ -44,23 +44,23 @@ class DragDropManager {
       const mouseFormY = mouse.y - target.form.Inside.y;
       const desiredFormX = mouseFormX - dnd.offsetX;
       const desiredFormY = mouseFormY - dnd.offsetY;
-      const relX = desiredFormX - target.x - target.Border.left;
-      const relY = desiredFormY - target.y - target.Border.top;
-        if(control.parent) control.parent.Lineage.remove(control);
-        control.Inside.x = relX;
-        control.Inside.y = relY;
-        target.add(control);
+      const relX = desiredFormX - target.Absolute.x - target.Border.left;
+      const relY = desiredFormY - target.Absolute.y - target.Border.top;
+      if(control.parent) control.parent.Lineage.remove(control);
+      control.Inside.x = relX;
+      control.Inside.y = relY;
+      target.add(control);
 
     } else {
-      control.Transformation.Move.to(dnd.srcX, dnd.srcY);
+      control.Move.to(dnd.srcX, dnd.srcY);
     }
     this.reset();
   }
 
   static autoScroll(container, mouseX, mouseY) {
     if(!container || !container.clip) return;
-    const innerW = container.width - container.Border.left - container.Border.right;
-    const innerH = container.height - container.Border.top - container.Border.bottom;
+    const innerW = container.Size.width - container.Border.left - container.Border.right;
+    const innerH = container.Size.height - container.Border.top - container.Border.bottom;
     if(innerW <= 0 || innerH <= 0) return;
     const threshold = Config.AUTOSCROLL_THRESHOLD;
     const localX = mouseX - container.form.Inside.x - container.Absolute.x - container.Border.left;
@@ -71,13 +71,13 @@ class DragDropManager {
     if(localX < threshold){ stepH = (threshold - localX) * 0.5; }
     else if(localX > innerW - threshold){ stepH = -(localX - (innerW - threshold)) * 0.5; }
     if(stepV === 0 && stepH === 0) return;
-    container.Transformation.Move.scroll(stepV, stepH);
+    container.Move.scroll(stepV, stepH);
   }
    static restore() {
     const dnd = dragdrop;
     const control = dnd.control;
     if(!control){ this.reset(); return; }
-    control.Transformation.Move.to(dnd.srcX, dnd.srcY);
+    control.Move.to(dnd.srcX, dnd.srcY);
     this.reset();
   }
   static reset() {
