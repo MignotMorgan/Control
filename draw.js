@@ -1,6 +1,6 @@
 class Draw {
     #Paint;
-    constructor(control) {
+    constructor(control){
         this.control = control;
         this.#Paint = null;
         this.#clip = false;
@@ -27,11 +27,11 @@ class Draw {
     drawChildren(){
         const control = this.control;
         const children = control.children;
-        //if(children != null)
-        for(let i = 0; i < children.length; i++)
-            children[i].Draw.execute();
-    }
 
+        for(let i = 0; i < children.length; i++)
+            if ( children[i].visible )
+                children[i].Draw.execute();
+    }
     draw(){
         const control = this.control;
         const paint = this.Paint;
@@ -57,7 +57,6 @@ class Draw {
             paint.drawRectangle(control.Absolute.x, control.Absolute.y, control.Size.width, control.Size.height, theme.color);
         });
     }
-
     drawBackground(){
         const control = this.control;
         const paint = this.Paint;
@@ -72,7 +71,6 @@ class Draw {
             paint.borderRectangleStyled(rect.x, rect.y, rect.width, rect.height, { color: theme.rectangle.color, lineWidth: theme.rectangle.lineWidth, style: theme.rectangle.style });
         }
     }
-
     drawBackgroundImage(x, y, w, h, image, mode = 'stretch'){
         const paint = this.Paint;
         const imgW = image.naturalWidth || image.width;
@@ -98,7 +96,6 @@ class Draw {
         dy = y + (h - dh) / 2;
         paint.drawImage(image, dx, dy, dw, dh);
     }
-
     drawBorder(){
         const control = this.control;
         const paint = this.Paint;
@@ -115,7 +112,6 @@ class Draw {
         if(theme.border.rectangle.lineWidth > 0)
             paint.borderRectangle(x, y, width, height, theme.border.rectangle.color, theme.border.rectangle.lineWidth);
     }
-
     drawResize(){
         const control = this.control;
         const paint = this.Paint;
@@ -155,7 +151,7 @@ class Draw {
 
 }
 
-class DrawForm extends Draw{
+class DrawForm extends Draw {
     constructor(control){
         super(control);
     }
@@ -169,8 +165,7 @@ class DrawForm extends Draw{
         iy += 20;
         if (focus !== null){
             paint.drawText(ix, iy, "focus : " + focus.id );
-        }
-        else{
+        } else {
             paint.drawText(ix, iy, "focus : null");
         }
         //iy += 20;
@@ -190,13 +185,7 @@ class DrawForm extends Draw{
         paint.drawText(ix, iy, "armed: " + dragdrop.armed + " active: " + dragdrop.active + " control: " + (dragdrop.control === null ? "null" : dragdrop.control.id) + " parent: " + (dragdrop.parent === null ? "null" : dragdrop.parent.id) + " target: " + (dragdrop.target === null ? "null" : dragdrop.target.id));
     }
     drawChildren(){
-        const control = this.control;
-        const children = control.children;
-        if( children != null )
-            for(let i = 0; i < children.length; i++)
-                if ( children[i] != null && children[i].visible )
-                    children[i].Draw.execute();
-    
+        super.drawChildren();
         if(dragdrop.control != null)dragdrop.control.Draw.execute();
     };
 }

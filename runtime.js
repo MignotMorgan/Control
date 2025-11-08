@@ -1,4 +1,3 @@
-
 function cjsLoop(){
     for(let i = 0; i < controls.length; i++){
         controls[i].Paint.clear();
@@ -117,8 +116,8 @@ function onMouseUpLeft(e){
 function onMouseDownRight(e){
     if( mousehover.control != null){
         mousehover.control.onFocus();
-        mousehover.control.Mouse.clickRight();
         mousehover.control.Transformation.on();
+        mousehover.control.Mouse.clickRight();
         return false;
     }
     return false;
@@ -172,7 +171,7 @@ function onKeyDown(e){
     Modifiers.shortcut = parts.join('+');
 
     if(focus !== null){
-        focus.Input.Keyboard.onKeyDown();
+        focus.Input.Keyboard.keyDown();
     }
 }
 
@@ -184,7 +183,7 @@ function onKeyUp(e){
     Modifiers.keyCode = e.keyCode ? e.keyCode : e.which;
     Modifiers.key = e.key;
     if(focus !== null){
-        focus.Input.Keyboard.onKeyUp();
+        focus.Input.Keyboard.keyUp();
     }
 }
 

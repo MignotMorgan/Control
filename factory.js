@@ -1,4 +1,4 @@
-class Factory{
+class Factory {
     create(x, y, width, height=width, top=10, right=top, bottom=top, left=right){
 
         let control = this.createControl();
@@ -66,7 +66,7 @@ class Factory{
 
 }
 
-  class FactoryForm extends Factory{  
+  class FactoryForm extends Factory {  
     createControl(){return new Form(); }
     createPaint(x, y, width, height, hide = false){ return new PaintCanvas(x, y, width, height, hide);}
     createRectangle(control, x, y, width, height, top, right, bottom, left){
@@ -91,7 +91,9 @@ class Factory{
 
   class FactoryText extends Factory{
     createControl(){ return new TextControl(); }
-    createDraw(control){ return new DrawTextControl(control); }
+    createDraw(control){ return new TextDraw(control); }
     createKeyboard(control){ return new TextKeyboard(control); }
     createMouse(control){ return new TextMouse(control); }
+    createResize(control){ return new ResizeText(control); }
+    createScale(control){ return new ScaleText(control); }
 }

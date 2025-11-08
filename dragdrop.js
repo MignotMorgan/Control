@@ -1,6 +1,6 @@
 class Drag {
     #active = false;
-    constructor(control) {
+    constructor(control){
         this.control = control;
     }
     get active(){ return this.#active === true; }
@@ -16,7 +16,7 @@ class Drag {
 
 class Drop {
     #active = false;
-    constructor(control) {
+    constructor(control){
         this.control = control;
     }
     get active(){ return this.#active === true; }

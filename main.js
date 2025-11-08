@@ -68,7 +68,7 @@ window.onload = ()=>{
     let control_7 = factory.create(50,50, 50, 40);
     control_7.id = "07";
     control_6.add(control_7);
-
+/*
     let factorytext = new FactoryText();
     let editor = factorytext.create(700, 20, 500, 300);
     editor.id = "editor";
@@ -95,6 +95,38 @@ window.onload = ()=>{
     if(typeof editor.onFocus === 'function') editor.onFocus();
     editor.useFixedViewport(220);
     editor.scrollY = true;
+*/
+
+// Avec options (multiligne)
+const factorytext = new FactoryText();
+const textArea = factorytext.create(700, 20, 500, 300);
+textArea.id = "textArea";
+textArea.canMove = true;
+textArea.canResize = true;
+
+
+// Définir le contenu initial (pas le placeholder)
+const initialText = "Hello TextControl!\n" +
+    "Tape du texte, sélectionne, copie/colle…\n\n" +
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.\n" +
+    "Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi.\n" +
+    "Proin porttitor, orci nec nonummy molestie, enim est eleifend mi, non fermentum diam nisl sit amet erat.\n" +
+    "Duis semper. Duis arcu massa, scelerisque vitae, consequat in, pretium a, enim.\n" +
+    "Pellentesque congue. Ut in risus volutpat libero pharetra tempor. Cras vestibulum bibendum augue.\n" +
+    "Praesent egestas leo in pede. Praesent blandit odio eu enim. Pellentesque sed dui ut augue blandit sodales.\n" +
+    "Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Aliquam nibh.\n" +
+    "Mauris ac mauris sed pede pellentesque fermentum. Maecenas adipiscing ante non diam sodales hendrerit.\n" +
+    "Ut velit mauris, egestas sed, gravida nec, ornare ut, mi. Aenean ut orci vel massa suscipit pulvinar.\n" +
+    "Nulla sollicitudin. Fusce varius, ligula non tempus aliquam, nunc turpis ullamcorper nibh, in tempus sapien eros vitae ligula.\n" +
+    "Pellentesque rhoncus nunc et augue. Integer id felis. Curabitur aliquet pellentesque diam. Integer quis metus vitae elit lobortis egestas.\n" +
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n";
+
+textArea.text = initialText;
+form.add(textArea);
+
+
+
+
 
     const themedBgCtrl = factory.create(1250, 20, 500, 350);
     themedBgCtrl.id = "themedBg";

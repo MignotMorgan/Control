@@ -47,7 +47,6 @@ class Move {
         if (parent.clip === true){ this.to(x, y); }
         else{ this.toIn(x, y); }
     };
-
     scroll(stepV = 0, stepH = 0){
         const control = this.control;
         if(!control.clip) return;
@@ -85,7 +84,8 @@ class Move {
         }
     }
 }
-class MoveForm extends Move{
+
+class MoveForm extends Move {
     constructor(control){
         super(control);
     }
@@ -103,6 +103,7 @@ class MoveForm extends Move{
         control.Absolute.y = 0;
     }
 }
+
 class Resize {
     #active = false;
     constructor(control){
@@ -206,7 +207,8 @@ class Resize {
     }
     parentResize(){}
 }
-class ResizeForm extends Resize{
+
+class ResizeForm extends Resize {
     constructor(control){
         super(control);
     }
@@ -253,6 +255,7 @@ class ResizeForm extends Resize{
                 control.children[i].Resize.parentResize();
     };
 }
+
 class Scale {
     #active = false;
     constructor(control){
@@ -312,7 +315,8 @@ class Scale {
     }
 
 }
-class ScaleForm extends Scale{
+
+class ScaleForm extends Scale {
     constructor(control){
         super(control);
     }
@@ -343,6 +347,7 @@ class ScaleForm extends Scale{
     };
 
 }
+
 class Transformation {
     constructor(control){
         this.control = control;

@@ -41,16 +41,17 @@ class Mouse {
     clickLeftUp(){};
     clickRight(){};
     clickRightUp(){};
-    wheel(deltaX, deltaY){ }
+    wheel(deltaX, deltaY){}
 }
 
 class Keyboard {
-    constructor(control) {
+    constructor(control){
         this.control = control;
     }
-    onKeyDown(){ }
-    onKeyUp(){ }
+    keyDown(){}
+    keyUp(){}
 }
+
 class Input {
     constructor(control){
         this.control = control;

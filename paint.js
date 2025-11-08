@@ -1,4 +1,4 @@
-class Paint{
+class Paint {
     constructor(x, y, width, height, hide = false){
         this.hide = hide;
     }
@@ -15,12 +15,11 @@ class Paint{
     restore(){ throw new Error('Paint.restore() must be implemented by the subclass'); }
     move(x, y){ throw new Error('Paint.move(x, y) must be implemented by the subclass'); }
     resize(width, height){ throw new Error('Paint.resize(width, height) must be implemented by the subclass'); }
-    measureText(text){ throw new Error('Paint.measureText(text) must be implemented by the subclass'); }
+    measureText(text, font){ throw new Error('Paint.measureText(text, font) must be implemented by the subclass'); }
     cutText(text, width){ throw new Error('Paint.cutText(text, width) must be implemented by the subclass'); }
     borderRectangle(x, y, width, height, color = 'black'){ throw new Error('Paint.borderRectangle(...) must be implemented by the subclass'); }
     drawRectangle(x, y, width, height, color = 'black'){ throw new Error('Paint.drawRectangle(...) must be implemented by the subclass'); }
-    drawText(x, y, text, options = {}){ throw new Error('Paint.drawText(...) must be implemented by the subclass'); }
-    drawTextBackground(x, yTop, text, options = {}){ throw new Error('Paint.drawTextBackground(...) must be implemented by the subclass'); }
+    drawText(x, y, text){ throw new Error('Paint.drawText(...) must be implemented by the subclass'); }
     borderRectangleStyled(x, y, width, height, options = {}){ throw new Error('Paint.borderRectangleStyled(...) must be implemented by the subclass'); }
     withAlpha(alpha, fn){ throw new Error('Paint.withAlpha(alpha, fn) must be implemented by the subclass'); }
     clipRectangle(x, y, width, height, fn){ throw new Error('Paint.clipRectangle(x, y, width, height, fn) must be implemented by the subclass'); }
@@ -29,7 +28,7 @@ class Paint{
     dispose(){ throw new Error('Paint.dispose() must be implemented by the subclass'); }
 }
 
-class PaintCanvas extends Paint{
+class PaintCanvas extends Paint {
     constructor(x, y, width, height, hide = false){
         super(x, y, width, height, hide);
         this.canvas = document.createElement('canvas');
@@ -57,7 +56,6 @@ class PaintCanvas extends Paint{
     clear(){
         this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     }
-
     save(){ this.context.save(); }
     restore(){ this.context.restore(); }
     dispose(){
@@ -98,7 +96,19 @@ class PaintCanvas extends Paint{
         this.canvas.width = width;
         this.canvas.height = height;
     }
-    measureText(text){ return this.context.measureText(text); }
+    measureText(text, font){ 
+        const ctx = this.context;
+        if (font !== undefined){
+            const prevFont = ctx.font;
+            try{
+                ctx.font = font.style + " " + font.size + "px " + font.family;
+                return ctx.measureText(text);
+            } finally {
+                ctx.font = prevFont;
+            }
+        }
+        return ctx.measureText(text);
+    }
     cutText(text, width){
         if(!text || text.length === 0) return ["", ""];
         if(!(width > 0)) return ["", text];
@@ -136,62 +146,16 @@ class PaintCanvas extends Paint{
             ctx.fillStyle = prevFill;
         }
     }
-    drawTextBackground(x, yTop, text, options = {}){
-        const { color = "#c5cae9", alpha = 0.35, height, yOffset = 0 } = options;
-        if(!text || text.length === 0) return;
-        if(!height || height <= 0){
-            return;
-        }
-        const w = this.measureText(text).width;
-        if(!w || w <= 0) return;
-        this.withAlpha(alpha, ()=>{
-            this.drawRectangle(x, yTop + yOffset, w, height, color);
-        });
-    }
-    drawText(x, y, text, options = {}){
+    drawText(x, y, text, font){
         const ctx = this.context;
-        const {
-            color = "",
-            font = "",
-            underline = false,
-            background = null,
-        } = options || {};
-
-        if(background){
-            this.drawTextBackground(x, y, text, background);
+        if (font !== undefined){
+            ctx.font = font.style + " " + font.size + "px " + font.family;
+            ctx.fillStyle = font.color;
         }
-
         if(!text || text.length === 0){
             return;
         }
-
-        if(color !== ""){
-            ctx.strokeStyle = color;
-            ctx.fillStyle = color;
-        }
-        if(font !== "") ctx.font = font;
         ctx.fillText(text, x, y);
-
-        if(underline){
-            const m = ctx.measureText(text);
-            let underlineY;
-            if(ctx.textBaseline === 'top'){
-                if(background && background.height){
-                    underlineY = y + background.height - 2;
-                } else if(typeof m.actualBoundingBoxAscent === 'number' && typeof m.actualBoundingBoxDescent === 'number'){
-                    underlineY = y + (m.actualBoundingBoxAscent + m.actualBoundingBoxDescent) - 2;
-                } else {
-                    underlineY = y + 12;
-                }
-            } else {
-                underlineY = y + 2;
-            }
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(x, underlineY);
-            ctx.lineTo(x + m.width, underlineY);
-            ctx.stroke();
-        }
     }
     borderRectangleStyled(x, y, width, height, options = {}){
         const { color = "black", lineWidth = 2, dash = [], dashOffset = 0 } = options;
@@ -232,7 +196,6 @@ class PaintCanvas extends Paint{
             ctx.restore();
         }
     }
-
     drawImage(image, x, y, width, height){
         this.context.drawImage(image, x, y, width, height);
     }

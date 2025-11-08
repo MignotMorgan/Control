@@ -1,4 +1,4 @@
-class ThemeImages{
+class ThemeImages {
     static #images = new Map();
     static get(url){
         if(this.#images.has(url)){return this.#images.get(url);}
@@ -21,7 +21,8 @@ class Theme {
             color: "#ffffff", 
             image:{Url: "", mode: 'stretch'}, 
             rectangle:{ color: "#000", lineWidth: 2 },
-            border: { color: "#cf2929ff", rectangle:{ color: "#000", lineWidth: 2} }
+            border: { color: "#cf2929ff", rectangle:{ color: "#000", lineWidth: 2} },
+            font : { family: "Arial", size: 16, style: "bold", color: "#000" }
         };
 
         if(this.background.image.Url !== "") ThemeImages.add(this.background.image.Url);

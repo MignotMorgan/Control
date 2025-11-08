@@ -1,19 +1,19 @@
 class Point {
-    constructor(x, y) {
+    constructor(x, y){
         this.x = x;
         this.y = y;
     }
 }
 
 class Size {
-    constructor(width, height) {
+    constructor(width, height){
         this.width = width;
         this.height = height;
     }
 }
 
 class Border {
-    constructor(top, right, bottom, left) {
+    constructor(top, right, bottom, left){
         this.top = top;
         this.right = right;
         this.bottom = bottom;
@@ -50,7 +50,7 @@ class Rectangle {
     }
 }
 
-class Geometric{
+class Geometric {
     constructor(control){
         this.control = control;
         this.Rectangle;

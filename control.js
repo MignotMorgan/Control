@@ -1,16 +1,16 @@
 let controls = [];
-let mouse = {x:0, y:0, down:Date.now(), up:Date.now(), time:0};
-let mousehover = {control:null, selected:null};
+let mouse = { x:0, y:0, down:Date.now(), up:Date.now(), time:0 };
+let mousehover = { control:null, selected:null };
 let Modifiers = { shift:false, ctrl:false, alt:false, meta:false, capslock:false, keyCode:0, key:"", shortcut:"" };
 // offset représente le pixel où vous avez cliquer dans le Control (Drag). 
 // Cela permet de ne  pas repositionner le contrôle en alignant son coin haut-gauche directement sous la souris.
 // C'est utilisé pour conserver l'articulation visuelle de la prise, de sorte que le point “saisi” au départ reste sous la souris.
-let dragdrop = {armed:false, active:false, control:null, parent:null, target:null, srcX:0, srcY:0, startX:0, startY:0, offsetX:0, offsetY:0, data:{ text:"", files: null }};
-let transformation = {control:null, offsetX:0, offsetY:0, resize:false, border:5, left:false, top:false, right:false, bottom:false, lock:false};
+let dragdrop = { armed:false, active:false, control:null, parent:null, target:null, srcX:0, srcY:0, startX:0, startY:0, offsetX:0, offsetY:0, data:{ text:"", files: null } };
+let transformation = { control:null, offsetX:0, offsetY:0, resize:false, border:5, left:false, top:false, right:false, bottom:false, lock:false };
 let focus = null;
 
 class Control {
-    constructor() {
+    constructor(){
         this.Geometric;
         this.Draw;
         this.Lineage;
@@ -28,32 +28,33 @@ class Control {
     get Inside(){ return this.Geometric.Rectangle.Inside; }
     get Size(){ return this.Geometric.Rectangle.Size; }
     get Border(){ return this.Geometric.Rectangle.Border; }
-    get Drag(){ return this.Lineage.Drag; }
-    get Drop(){ return this.Lineage.Drop; }
     get Transformation(){ return this.Geometric.Transformation; }
     get Move(){ return this.Geometric.Transformation.Move; }
     get Resize(){ return this.Geometric.Transformation.Resize; }
     get Scale(){ return this.Geometric.Transformation.Scale; }
+    get Drag(){ return this.Lineage.Drag; }
+    get Drop(){ return this.Lineage.Drop; }
     get Mouse(){ return this.Input.Mouse; }
     get Keyboard(){ return this.Input.Keyboard; }
+    get Theme(){ return this.Draw.Theme; }
 
-    get canMove(){ return this.Geometric.Transformation.Move.active;}
-    set canMove(value){ this.Geometric.Transformation.Move.active = value;}
-    get canResize(){ return this.Geometric.Transformation.Resize.active;}
-    set canResize(value){ this.Geometric.Transformation.Resize.active = value;}
-    get canScale(){ return this.Geometric.Transformation.Scale.active;}
-    set canScale(value){ this.Geometric.Transformation.Scale.active = value;}
+    get canMove(){ return this.Geometric.Transformation.Move.active; }
+    set canMove(value){ this.Geometric.Transformation.Move.active = value; }
+    get canResize(){ return this.Geometric.Transformation.Resize.active; }
+    set canResize(value){ this.Geometric.Transformation.Resize.active = value; }
+    get canScale(){ return this.Geometric.Transformation.Scale.active; }
+    set canScale(value){ this.Geometric.Transformation.Scale.active = value; }
 
     get canDrag(){ return this.Lineage.Drag.active }
     set canDrag(value){ this.Lineage.Drag.active = !!value }
     get canDrop(){ return this.Lineage.Drop.active }
     set canDrop(value){ this.Lineage.Drop.active = !!value; }
 
-    get form(){return this.Lineage.form;}
-    get parent(){return this.Lineage.parent;}
-    get children(){return this.Lineage.children;}   
-    get right(){return this.Absolute.x + this.Size.width;}
-    get bottom(){return this.Absolute.y + this.Size.height;}
+    get form(){ return this.Lineage.form; }
+    get parent(){ return this.Lineage.parent; }
+    get children(){ return this.Lineage.children; }   
+    get right(){ return this.Absolute.x + this.Size.width; }
+    get bottom(){ return this.Absolute.y + this.Size.height; }
 
     get clip(){ return this.Draw.clip; }
     set clip(value){ this.Draw.clip = value; }
@@ -64,21 +65,20 @@ class Control {
     contains(x, y){ return this.Geometric.Rectangle.contains(x, y); }
     add(control){ this.Lineage.add(control); }
     remove(control){ return this.Lineage.remove(control); }
-    //destroy(){ this.Lineage.destroy(); }
-    onDraw(context, x, y){ this.Draw.execute(); }
+    onDraw(){ this.Draw.execute(); }
 
     onFocus(){
         if( this.canFocus ){ 
             focus = this; 
             if(this.parent != null){ this.parent.Lineage.firstPosition(this); }
-        } else if ( this.parent != null ) {
+        } else if( this.parent != null ){
             this.parent.onFocus();
         }
     }
 }
 
 class Form extends Control {
-    constructor() {
+    constructor(){
         super();
         controls.push(this);
     }

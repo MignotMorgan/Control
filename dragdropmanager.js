@@ -1,5 +1,5 @@
 class DragDropManager {
-  static start() {
+  static start(){
     const dnd = dragdrop;
     const control = mousehover.control;
     dnd.control = control;
@@ -14,7 +14,7 @@ class DragDropManager {
     dnd.active = false;
     control.Drag.start();
   }
-  static move() {
+  static move(){
     const dnd = dragdrop;
     const control = dnd.control;
     if (dnd.armed && !dnd.active){
@@ -31,7 +31,7 @@ class DragDropManager {
     dnd.target = mousehover.control ? mousehover.control.Drop.target() : null;
     if(dnd.target && dnd.target.clip){ this.autoScroll(dnd.target, mouse.x, mouse.y); }
   }
-  static dropControl() {
+  static dropControl(){
     const dnd = dragdrop;
     const control = dnd.control;
     let target = dnd.target;
@@ -57,7 +57,7 @@ class DragDropManager {
     this.reset();
   }
 
-  static autoScroll(container, mouseX, mouseY) {
+  static autoScroll(container, mouseX, mouseY){
     if(!container || !container.clip) return;
     const innerW = container.Size.width - container.Border.left - container.Border.right;
     const innerH = container.Size.height - container.Border.top - container.Border.bottom;
@@ -73,14 +73,14 @@ class DragDropManager {
     if(stepV === 0 && stepH === 0) return;
     container.Move.scroll(stepV, stepH);
   }
-   static restore() {
+   static restore(){
     const dnd = dragdrop;
     const control = dnd.control;
     if(!control){ this.reset(); return; }
     control.Move.to(dnd.srcX, dnd.srcY);
     this.reset();
   }
-  static reset() {
+  static reset(){
     dragdrop.armed = false;
     dragdrop.active = false;
     dragdrop.control = null;
