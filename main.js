@@ -75,7 +75,7 @@ window.onload = ()=>{
     editor.canMove = true;
     editor.canResize = true;
     editor.text = (
-        "Hello TextControl!\n" +
+        "Hello ControlText!\n" +
         "Tape du texte, sélectionne, copie/colle…\n\n" +
         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.\n" +
         "Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi.\n" +
@@ -106,7 +106,7 @@ textArea.canResize = true;
 
 
 // Définir le contenu initial (pas le placeholder)
-const initialText = "Hello TextControl!\n" +
+const initialText = "Hello ControlText!\n" +
     "Tape du texte, sélectionne, copie/colle…\n\n" +
     "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed non risus. Suspendisse lectus tortor, dignissim sit amet, adipiscing nec, ultricies sed, dolor.\n" +
     "Cras elementum ultrices diam. Maecenas ligula massa, varius a, semper congue, euismod non, mi.\n" +

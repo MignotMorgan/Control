@@ -3,7 +3,7 @@
 // Support mono/multiligne, API complète de modification, architecture modulaire
 
 /**
- * Classe TextControl - Contrôle d'édition de texte
+ * Classe ControlText - Contrôle d'édition de texte
  * Hérite de Control et fournit une API complète pour l'édition de texte
  * 
  * OPTIONS:
@@ -27,7 +27,7 @@
  *   - undo() - Annule la dernière modification
  *   - redo() - Rétablit la dernière modification annulée
  */
-class TextControl extends Control {
+class ControlText extends Control {
     #text = "";
     #lines = [""];
     #modified = false;
@@ -39,7 +39,7 @@ class TextControl extends Control {
         this.wrap = true;
         this.readonly = false;
         this.maxLength = -1;
-        
+        this.margin = {top: 10, right: 10, bottom: 10, left: 10}
         
 
     }
@@ -54,7 +54,28 @@ class TextControl extends Control {
         super.initialize();
         //this.clip = true;
     }
-    
+    modifiedLines(){
+        if (this.modified) {
+            if (this.multiline && this.wrap) {
+                this.lines = this.wrapText();
+            } else if (this.multiline) {
+                this.lines = this.text.split('\n');
+            } else {
+                this.lines = [this.text];
+            }
+            this.modified = false;
+        }
+    }
+    rectangleText(){
+        const size = this.Size;
+        const border = this.Border;
+        return {
+            x: this.Absolute.x + border.left + this.margin.left,
+            y: this.Absolute.y + border.top + this.margin.top,
+            width: size.width - border.left - border.right - this.margin.left - this.margin.right,
+            height: size.height - border.top - border.bottom - this.margin.top - this.margin.bottom
+        };
+    }
     /**
      * Effectue le retour à la ligne automatique du texte en fonction de la largeur du contrôle
      * @returns {string[]} - Tableau des lignes après wrapping
@@ -63,20 +84,15 @@ class TextControl extends Control {
         const wrappedLines = [];
         const font = this.Theme?.background?.font;
         const paint = this.Paint;
-        
-        if (!font || !paint) {
-            this.modified = false;
-            return this.#text.split('\n');
-        }
-        const rect = this.Rectangle.rectangleBackground();
-        const maxWidth = rect.width;
         const paragraphs = this.#text.split('\n');
 
-        if(!this.wrap){
-            this.modified = false;
+        if(!this.wrap || !font || !paint){
             return paragraphs;
         }
         
+        const rect = this.rectangleText();
+        const maxWidth = rect.width;
+
         for (let para of paragraphs) {
             if (para === '') {
                 wrappedLines.push('');
@@ -102,8 +118,6 @@ class TextControl extends Control {
                 wrappedLines.push(currentLine);
             }
         }
-        
-        this.modified = false;
         return wrappedLines;
     }
 }
@@ -112,7 +126,7 @@ class TextControl extends Control {
 // CLASSE TEXTDRAW - Rendu visuel
 // ================================================
 
-class TextDraw extends Draw {
+class DrawText extends Draw {
     constructor(control) {
         super(control);
     }
@@ -123,19 +137,10 @@ class TextDraw extends Draw {
         const control = this.control;
         const paint = control.Paint;
         if (!paint) return;
-        const rect = control.Rectangle.rectangleBackground();
+        if(control.modified){ control.modifiedLines(); }
+        const rect = control.rectangleText();
         const font = control.Theme.background.font;
         
-        // Recalculer les lignes si nécessaire
-        if (control.modified) {
-            if (control.multiline && control.wrap) {
-                control.lines = control.wrapText();
-            } else if (control.multiline) {
-                control.lines = control.text.split('\n');
-            } else {
-                control.lines = [control.text];
-            }
-        }
         
         // Calculer le nombre maximum de lignes visibles
         const lineHeight = font.size;
@@ -150,7 +155,9 @@ class TextDraw extends Draw {
             });
         }else{
             for(let i = 0; i < linesToDraw; i++){
+                paint.save();
                 paint.drawText(rect.x, rect.y + lineHeight * (i+1), control.lines[i], font);
+                paint.restore();
             }
         }
     }
@@ -160,7 +167,7 @@ class TextDraw extends Draw {
 // CLASSE TEXTMOUSE - Gestion de la souris
 // ================================================
 
-class TextMouse extends Mouse {
+class MouseText extends Mouse {
     constructor(control) {
         super(control);
     }
@@ -186,7 +193,7 @@ class TextMouse extends Mouse {
 // CLASSE TEXTKEYBOARD - Gestion du clavier
 // ================================================
 
-class TextKeyboard extends Keyboard {
+class KeyboardText extends Keyboard {
     constructor(control) {
         super(control);
     }

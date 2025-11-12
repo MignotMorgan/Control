@@ -148,12 +148,10 @@ class PaintCanvas extends Paint {
     }
     drawText(x, y, text, font){
         const ctx = this.context;
+        if(!text || text.length === 0){ return; }
         if (font !== undefined){
             ctx.font = font.style + " " + font.size + "px " + font.family;
             ctx.fillStyle = font.color;
-        }
-        if(!text || text.length === 0){
-            return;
         }
         ctx.fillText(text, x, y);
     }
