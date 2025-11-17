@@ -25,10 +25,35 @@
  *   - selectAll() - Sélectionne tout le texte
  *   - getSelectedText() - Récupère le texte sélectionné
  */
+class CursorText {
+    #position = 0;
+    #line = 0;
+    #column = 0;
+    #x = 0;
+    #y = 0;
+    #lastX = 0;
+    constructor(control){
+        this.control = control;
+    }
+    get position(){ return this.#position; }
+    set position(value){ this.#position = value; }
+    get line(){ return this.#line; }
+    set line(value){ this.#line = value; }
+    get column(){ return this.#column; }
+    set column(value){ this.#column = value; }
+    get x(){ return this.#x; }
+    set x(value){ this.#x = value; }
+    get y(){ return this.#y; }
+    set y(value){ this.#y = value; }
+    get lastX(){ return this.#lastX; }
+    set lastX(value){ this.#lastX = value; }
+}
 class ControlText extends Control {
     #text = "";
     #lines = [""];
     #modified = false;
+    #margin = {top: 10, right: 10, bottom: 10, left: 10}
+    #cursor = new CursorText(this);
     constructor() {
         super();
 
@@ -37,11 +62,10 @@ class ControlText extends Control {
         this.wrap = true;
         this.readonly = false;
         this.maxLength = -1;
-        this.margin = {top: 10, right: 10, bottom: 10, left: 10}
-        this.cursor = {position:0, line:0, column:0, x:0, y:0}
+        //this.margin = {top: 10, right: 10, bottom: 10, left: 10}
+        //this.cursor = {position:0, line:0, column:0, x:0, y:0, lastX:0}
         this.selection = {start:0, end:0}
 
-        this.absoluePosition = 0;
     }
     get text(){ return this.#text; }
     set text(value){ this.#text = value; this.modified = true; }
@@ -50,6 +74,8 @@ class ControlText extends Control {
     get modified(){ return this.#modified; }
     set modified(value){ this.#modified = value; }
 
+    get cursor(){ return this.#cursor; }
+    get margin(){ return this.#margin; }
     get font(){ return this.Theme?.background?.font; }
     
     initialize(){
@@ -67,6 +93,7 @@ class ControlText extends Control {
             }
             this.modified = false;
             this.cursorPosition();
+            this.cursor.lastX = this.cursor.x;
         }
     }
     rectangleText(){
@@ -131,27 +158,27 @@ class ControlText extends Control {
         this.cursor.position = position + text.length;
     }
     cursorMouse(){
-        this.cursor.position = this.positionMouse();
+        const mouseInside = this.Mouse.inside();
+        const mouseX = mouseInside.x - this.Border.left - this.margin.left;
+        const mouseY = mouseInside.y - this.Border.top - this.margin.top;
+        this.cursor.position = this.positionInside(mouseX, mouseY);
         this.cursorPosition();
+        this.cursor.lastX = this.cursor.x;
     }
-    positionMouse(){
+    positionInside(insideX, insideY){
         const rect = this.rectangleText();
         const font = this.font;
         const paint = this.Paint;
         if (!font || !paint) return -1;
-
-        const mouseInside = this.Mouse.inside();
-        const mouseX = mouseInside.x - this.Border.left - this.margin.left;
-        const mouseY = mouseInside.y - this.Border.top - this.margin.top;
         
-        const lineTarget = Math.max(0, Math.min(Math.floor(mouseY / font.size), this.lines.length - 1));
+        const lineTarget = Math.max(0, Math.min(Math.floor(insideY / font.size), this.lines.length - 1));
         
         const lineText = this.lines[lineTarget] || "";
         let column = 0;
     
         for (let i = 0; i <= lineText.length; i++) {
             const textWidth = paint.measureText(lineText.substring(0, i), font)?.width || 0;
-            if (textWidth <= mouseX) { column = i; }
+            if (textWidth <= insideX) { column = i; }
             else{ break; }
         }
         let position = 0;
@@ -180,6 +207,17 @@ class ControlText extends Control {
         }
         this.cursor.x = paint.measureText(this.lines[cursor.line].substring(0, cursor.column), font)?.width || 0;
         this.cursor.y = cursor.line * font.size;
+    }
+    moveLine(line){
+        const cursor = this.cursor;
+        cursor.position = this.positionInside(cursor.lastX, cursor.y + line * this.font.size);
+        this.cursorPosition();
+    }
+    moveColumn(column){
+        const cursor = this.cursor;
+        cursor.position += column;
+        this.cursorPosition();
+        this.cursor.lastX = this.cursor.x;
     }
 }
 
@@ -311,13 +349,13 @@ class KeyboardText extends Keyboard {
         
         // Navigation
         if (key === 'ArrowLeft') {
-            //control._moveCursor('left', shift);
+            control.moveColumn(-1);
         } else if (key === 'ArrowRight') {
-            //control._moveCursor('right', shift);
+            control.moveColumn(1);
         } else if (key === 'ArrowUp') {
-            //if (control.multiline) control._moveCursor('up', shift);
+            control.moveLine(-1);
         } else if (key === 'ArrowDown') {
-            //if (control.multiline) control._moveCursor('down', shift);
+            control.moveLine(1);
         } else if (key === 'Home') {
             //control._moveCursor('home', shift);
         } else if (key === 'End') {
