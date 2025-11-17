@@ -24,8 +24,6 @@
  *   - clear() - Efface tout le texte
  *   - selectAll() - Sélectionne tout le texte
  *   - getSelectedText() - Récupère le texte sélectionné
- *   - undo() - Annule la dernière modification
- *   - redo() - Rétablit la dernière modification annulée
  */
 class ControlText extends Control {
     #text = "";
@@ -40,8 +38,10 @@ class ControlText extends Control {
         this.readonly = false;
         this.maxLength = -1;
         this.margin = {top: 10, right: 10, bottom: 10, left: 10}
-        
+        this.cursor = {position:0, line:0, column:0, x:0, y:0}
+        this.selection = {start:0, end:0}
 
+        this.absoluePosition = 0;
     }
     get text(){ return this.#text; }
     set text(value){ this.#text = value; this.modified = true; }
@@ -50,6 +50,8 @@ class ControlText extends Control {
     get modified(){ return this.#modified; }
     set modified(value){ this.#modified = value; }
 
+    get font(){ return this.Theme?.background?.font; }
+    
     initialize(){
         super.initialize();
         //this.clip = true;
@@ -64,6 +66,7 @@ class ControlText extends Control {
                 this.lines = [this.text];
             }
             this.modified = false;
+            this.cursorPosition();
         }
     }
     rectangleText(){
@@ -76,13 +79,9 @@ class ControlText extends Control {
             height: size.height - border.top - border.bottom - this.margin.top - this.margin.bottom
         };
     }
-    /**
-     * Effectue le retour à la ligne automatique du texte en fonction de la largeur du contrôle
-     * @returns {string[]} - Tableau des lignes après wrapping
-     */
     wrapText() {
         const wrappedLines = [];
-        const font = this.Theme?.background?.font;
+        const font = this.font;
         const paint = this.Paint;
         const paragraphs = this.#text.split('\n');
 
@@ -120,6 +119,68 @@ class ControlText extends Control {
         }
         return wrappedLines;
     }
+    insertText(text) {
+        if(this.readonly) return;
+        if (this.maxLength > 0 && this.#text.length + text.length > this.maxLength) {
+            return; // ou truncate
+        }
+        const cursor = this.cursor;
+        const position = cursor.position;
+        this.#text = this.#text.substring(0, position) + text + this.#text.substring(position);
+        this.modified = true;
+        this.cursor.position = position + text.length;
+    }
+    cursorMouse(){
+        this.cursor.position = this.positionMouse();
+        this.cursorPosition();
+    }
+    positionMouse(){
+        const rect = this.rectangleText();
+        const font = this.font;
+        const paint = this.Paint;
+        if (!font || !paint) return -1;
+
+        const mouseInside = this.Mouse.inside();
+        const mouseX = mouseInside.x - this.Border.left - this.margin.left;
+        const mouseY = mouseInside.y - this.Border.top - this.margin.top;
+        
+        const lineTarget = Math.max(0, Math.min(Math.floor(mouseY / font.size), this.lines.length - 1));
+        
+        const lineText = this.lines[lineTarget] || "";
+        let column = 0;
+    
+        for (let i = 0; i <= lineText.length; i++) {
+            const textWidth = paint.measureText(lineText.substring(0, i), font)?.width || 0;
+            if (textWidth <= mouseX) { column = i; }
+            else{ break; }
+        }
+        let position = 0;
+        for (let i = 0; i < lineTarget; i++) {
+            position += this.lines[i].length + 1;
+        }
+        position += column;
+        return position;
+    }
+    cursorPosition(){
+        const font = this.font;
+        const paint = this.Paint;
+        if (!font || !paint) return ;
+        const cursor = this.cursor;
+
+        let nbrChar = 0;
+        
+        for (let i = 0; i < this.lines.length; i++) {
+            const lineLength = this.lines[i].length;
+            if(cursor.position <= nbrChar + lineLength){
+                cursor.line = i;
+                cursor.column = cursor.position - nbrChar;
+                break;
+            }
+            nbrChar += lineLength + 1;
+        }
+        this.cursor.x = paint.measureText(this.lines[cursor.line].substring(0, cursor.column), font)?.width || 0;
+        this.cursor.y = cursor.line * font.size;
+    }
 }
 
 // ================================================
@@ -139,7 +200,7 @@ class DrawText extends Draw {
         if (!paint) return;
         if(control.modified){ control.modifiedLines(); }
         const rect = control.rectangleText();
-        const font = control.Theme.background.font;
+        const font = control.font;
         
         
         // Calculer le nombre maximum de lignes visibles
@@ -160,6 +221,28 @@ class DrawText extends Draw {
                 paint.restore();
             }
         }
+        this.drawCursor();
+    }
+    drawCursor(){
+        const control = this.control;
+        if (control.readonly) return;
+        if (control !== focus) return; // Seulement si le contrôle a le focus
+        
+        const paint = control.Paint;
+        if (!paint) return;
+        const rect = control.rectangleText();
+        const font = control.font;
+        const cursor = control.cursor;
+        if( cursor.x < 0 || cursor.y < 0 ) return;
+        if(cursor.x > rect.width || cursor.y + font.size > rect.height) return;
+
+        paint.save();
+        paint.drawLine(
+            rect.x + cursor.x, rect.y + cursor.y, 
+            rect.x + cursor.x, rect.y + cursor.y + font.size,
+            font.color || 'black', 1
+        );
+        paint.restore();
     }
 }
 
@@ -174,7 +257,11 @@ class MouseText extends Mouse {
     
     // Focus le contrôle, positionne le curseur au point cliqué et prépare une sélection par drag (dragStartPos)
     clickLeft() {
-
+        super.clickLeft();
+        const control = this.control;
+        if (control.readonly) return;
+        
+        control.cursorMouse();
     }
     
     // Termine la sélection par drag (réinitialise dragStartPos)
@@ -185,6 +272,7 @@ class MouseText extends Mouse {
     // Pendant un drag, met à jour la sélection (start/end) selon la position souris et déplace le curseur
     hover() {
         super.hover();
+        const control = this.control;
     }
 
 }
@@ -239,13 +327,13 @@ class KeyboardText extends Keyboard {
         } else if (key === 'Delete') {
             //control.deleteAtCursor(true);
         } else if (key === 'Enter') {
-            //if (control.multiline) {
-                //control.insertAtCursor('\n');
-            //}
+            if (control.multiline) {
+                control.insertText('\n');
+            }
         } else if (key === 'Tab') {
-            //control.insertAtCursor('    ');
+            control.insertText('    ');
         } else if (key.length === 1 && !ctrl) {
-            //control.insertAtCursor(key);
+            control.insertText(key);
         }
     }
 }

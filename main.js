@@ -119,7 +119,7 @@ const initialText = "Hello ControlText!\n" +
     "Ut velit mauris, egestas sed, gravida nec, ornare ut, mi. Aenean ut orci vel massa suscipit pulvinar.\n" +
     "Nulla sollicitudin. Fusce varius, ligula non tempus aliquam, nunc turpis ullamcorper nibh, in tempus sapien eros vitae ligula.\n" +
     "Pellentesque rhoncus nunc et augue. Integer id felis. Curabitur aliquet pellentesque diam. Integer quis metus vitae elit lobortis egestas.\n" +
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\n";
+    "Lorem ipsum dolor sit amet, consectetur adipiscing elit.";
 
 textArea.text = initialText;
 form.add(textArea);

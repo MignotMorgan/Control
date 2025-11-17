@@ -146,6 +146,19 @@ class PaintCanvas extends Paint {
             ctx.fillStyle = prevFill;
         }
     }
+    drawLine(x1, y1, x2, y2, color = "black", lineWidth = 1){
+        const ctx = this.context;
+        const prevFill = ctx.fillStyle;
+        const prevLine = ctx.lineWidth;
+        ctx.fillStyle = color;
+        ctx.lineWidth = lineWidth;
+        ctx.beginPath();
+        ctx.moveTo(x1, y1);
+        ctx.lineTo(x2, y2);
+        ctx.stroke();
+        ctx.fillStyle = prevFill;
+        ctx.lineWidth = prevLine;
+    }
     drawText(x, y, text, font){
         const ctx = this.context;
         if(!text || text.length === 0){ return; }
