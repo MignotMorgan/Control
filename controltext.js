@@ -54,6 +54,7 @@ class ControlText extends Control {
     #modified = false;
     #margin = {top: 10, right: 10, bottom: 10, left: 10}
     #cursor = new CursorText(this);
+    #scroll = 6;
     constructor() {
         super();
 
@@ -77,6 +78,8 @@ class ControlText extends Control {
     get cursor(){ return this.#cursor; }
     get margin(){ return this.#margin; }
     get font(){ return this.Theme?.background?.font; }
+    get scroll(){ return this.#scroll; }
+    set scroll(value){ this.#scroll = value; }
     
     initialize(){
         super.initialize();
@@ -171,7 +174,7 @@ class ControlText extends Control {
         const paint = this.Paint;
         if (!font || !paint) return -1;
         
-        const lineTarget = Math.max(0, Math.min(Math.floor(insideY / font.size), this.lines.length - 1));
+        const lineTarget = Math.max(0, Math.min(Math.floor(insideY / font.size) + this.scroll, this.lines.length - 1));
         
         const lineText = this.lines[lineTarget] || "";
         let column = 0;
@@ -206,11 +209,29 @@ class ControlText extends Control {
             nbrChar += lineLength + 1;
         }
         this.cursor.x = paint.measureText(this.lines[cursor.line].substring(0, cursor.column), font)?.width || 0;
-        this.cursor.y = cursor.line * font.size;
+        this.cursor.y = (cursor.line - this.scroll) * font.size;
     }
     moveLine(line){
         const cursor = this.cursor;
-        cursor.position = this.positionInside(cursor.lastX, cursor.y + line * this.font.size);
+        let scrollLine = cursor.line - this.scroll + line;
+
+        if(scrollLine < 0 && this.scroll + scrollLine >= 0){
+            this.scroll += scrollLine;
+            scrollLine = 0;
+        }else if(scrollLine < 0){
+            scrollLine = 0;
+            this.scroll = 0;
+        }else if(scrollLine > this.maxLine()-1 && this.scroll + line < this.maxScroll()){
+            this.scroll += line;
+            scrollLine = this.maxLine()-1;
+        }else if(scrollLine > this.maxLine()-1){
+            scrollLine = this.maxLine()-1; 
+            this.scroll = this.maxScroll();
+        }
+
+
+        //scrollLine = Math.max(0, Math.min(scrollLine, this.maxLine()-1));
+        cursor.position = this.positionInside(cursor.lastX, scrollLine * this.font.size);
         this.cursorPosition();
     }
     moveColumn(column){
@@ -218,6 +239,14 @@ class ControlText extends Control {
         cursor.position += column;
         this.cursorPosition();
         this.cursor.lastX = this.cursor.x;
+    }
+    maxLine(){
+        const rect = this.rectangleText();
+        const font = this.font;
+        return Math.floor(rect.height / font.size);
+    }
+    maxScroll(){
+        return Math.max(0, this.lines.length - this.maxLine());
     }
 }
 
@@ -239,27 +268,28 @@ class DrawText extends Draw {
         if(control.modified){ control.modifiedLines(); }
         const rect = control.rectangleText();
         const font = control.font;
+        const scroll = control.scroll;
         
         
         // Calculer le nombre maximum de lignes visibles
-        const lineHeight = font.size;
-        const maxVisibleLines = Math.floor(rect.height / lineHeight);
-        const linesToDraw = Math.min(control.lines.length, maxVisibleLines);
+        const linesToDraw = Math.min(control.lines.length-scroll, control.maxLine());
  
         if (control.clip){
             paint.clipRectangle(rect.x, rect.y, rect.width, rect.height, ()=>{
                 for(let i = 0; i < linesToDraw; i++){
-                    paint.drawText(rect.x, rect.y + lineHeight * (i+1), control.lines[i], font);
+                    paint.drawText(rect.x, rect.y + font.size * (i+1), control.lines[i+scroll], font);
                 }
             });
         }else{
             for(let i = 0; i < linesToDraw; i++){
                 paint.save();
-                paint.drawText(rect.x, rect.y + lineHeight * (i+1), control.lines[i], font);
+                paint.drawText(rect.x, rect.y + font.size * (i+1), control.lines[i+scroll], font);
                 paint.restore();
             }
         }
         this.drawCursor();
+
+        paint.drawText(rect.x, rect.y, "scroll :" + control.scroll, font);
     }
     drawCursor(){
         const control = this.control;
