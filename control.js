@@ -1,3 +1,4 @@
+
 let controls = [];
 let mouse = { x:0, y:0, down:Date.now(), up:Date.now(), time:0 };
 let mousehover = { control:null, selected:null };
@@ -77,15 +78,3 @@ class Control {
     }
 }
 
-class Form extends Control {
-    constructor(){
-        super();
-        controls.push(this);
-    }
-    initialize(){
-        super.initialize();
-        this.Lineage.form = this;
-        this.x = 0;
-        this.y = 0;        
-    }    
-}

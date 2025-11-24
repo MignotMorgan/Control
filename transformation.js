@@ -85,25 +85,6 @@ class Move {
     }
 }
 
-class MoveForm extends Move {
-    constructor(control){
-        super(control);
-    }
-    on(){
-        let x = mouse.x - transformation.offsetX;
-        let y = mouse.y - transformation.offsetY;
-        this.to(x, y);
-    };
-    to(x, y){
-        const control = this.control;
-        control.Paint.move(x, y);
-        control.Inside.x = x;
-        control.Inside.y = y;
-        control.Absolute.x = 0;
-        control.Absolute.y = 0;
-    }
-}
-
 class Resize {
     #active = false;
     constructor(control){
@@ -208,54 +189,6 @@ class Resize {
     parentResize(){}
 }
 
-class ResizeForm extends Resize {
-    constructor(control){
-        super(control);
-    }
-    on(){
-        const control = this.control;
-        var left = control.Inside.x;
-        var top = control.Inside.y;
-        var right = control.Inside.x + control.Size.width;
-        var bottom = control.Inside.y + control.Size.height;
-
-        if( transformation.left )left = mouse.x;
-        if( transformation.top )top = mouse.y;
-        if( transformation.right )right = mouse.x;
-        if( transformation.bottom )bottom = mouse.y;
-
-        if(control.canScale){
-            var width = right - left;
-            var height = bottom - top;
-            var ratio_width = width / control.Size.width;
-            var ratio_height = height / control.Size.height;
-
-            var ratio_size = control.Scale.minimumScale( {width:ratio_width, height:ratio_height} );
-            if(transformation.left && ratio_size.width == 1)left = control.Inside.x;
-            if(transformation.top && ratio_size.height == 1)top = control.Inside.y;
-            if(transformation.left || transformation.top)
-                control.Scale.moveToScale(left, top);
-            control.Scale.to(ratio_size.width, ratio_size.height);
-        }
-        else{
-            if(transformation.left || transformation.top)
-                control.Move.to(left, top);
-            this.to(right - left, bottom - top);
-        }
-    };
-    to(width, height){
-        const control = this.control;
-        control.Paint.resize(width, height);
-
-        control.Size.width = width;
-        control.Size.height = height;
-
-        if( control.children != null )
-            for(var i = 0; i < control.children.length; i++)
-                control.children[i].Resize.parentResize();
-    };
-}
-
 class Scale {
     #active = false;
     constructor(control){
@@ -313,38 +246,6 @@ class Scale {
                 ratio_size = control.children[i].Scale.minimumScale(ratio_size);
         return ratio_size;
     }
-
-}
-
-class ScaleForm extends Scale {
-    constructor(control){
-        super(control);
-    }
-    to(ratio_width, ratio_height){
-        const control = this.control;
-        const border = control.Border;
-        control.Paint.resize(control.Size.width*ratio_width, control.Size.height*ratio_height);
-
-        control.Size.width = control.Size.width * ratio_width;
-        control.Size.height = control.Size.height * ratio_height;
-
-        border.left = border.left * ratio_width;
-        border.right = border.right * ratio_width;
-        border.top = border.top * ratio_height;
-        border.bottom = border.bottom * ratio_height;
-
-        if( control.children != null )
-            for(var i = 0; i < control.children.length; i++)
-                control.children[i].Scale.parentScale(ratio_width, ratio_height);
-    };
-
-    moveToScale(x, y){
-        const control = this.control;
-        const parent = control.parent;
-        control.Inside.x = parent === null ? x : x - parent.Absolute.x - parent.Border.left;
-        control.Inside.y = parent === null ? y : y - parent.Absolute.y - parent.Border.top;
-        control.Paint.move(x, y);
-    };
 
 }
 

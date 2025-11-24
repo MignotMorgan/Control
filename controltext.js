@@ -425,3 +425,12 @@ class ScaleText extends Scale {
         this.control.modified = true;
     };
 }
+
+class FactoryText extends Factory{
+    createControl(){ return new ControlText(); }
+    createDraw(control){ return new DrawText(control); }
+    createKeyboard(control){ return new KeyboardText(control); }
+    createMouse(control){ return new MouseText(control); }
+    createResize(control){ return new ResizeText(control); }
+    createScale(control){ return new ScaleText(control); }
+}
