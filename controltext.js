@@ -1,3 +1,5 @@
+
+
 // textcontrol.js
 // Contrôle d'édition de texte simplifié et évolutif
 // Support mono/multiligne, API complète de modification, architecture modulaire
@@ -294,7 +296,7 @@ class DrawText extends Draw {
     drawCursor(){
         const control = this.control;
         if (control.readonly) return;
-        if (control !== focus) return; // Seulement si le contrôle a le focus
+        if (control !== Core.focus) return; // Seulement si le contrôle a le focus
         
         const paint = control.Paint;
         if (!paint) return;
@@ -358,11 +360,12 @@ class KeyboardText extends Keyboard {
     keyDown() {
         super.keyDown();
         const control = this.control;
+        const modifiers = Core.modifiers;
         if (control.readonly) return;
         
-        const key = Modifiers.key;
-        const ctrl = Modifiers.ctrl;
-        const shift = Modifiers.shift;
+        const key = modifiers.key;
+        const ctrl = modifiers.ctrl;
+        const shift = modifiers.shift;
         
         // Raccourcis clavier
         if (ctrl) {
@@ -428,7 +431,11 @@ class ScaleText extends Scale {
 
 class FactoryText extends Factory{
     createControl(){ return new ControlText(); }
-    createDraw(control){ return new DrawText(control); }
+    createDraw(control){
+        const draw = new DrawText(control); 
+        draw.Theme = this.createTheme();
+        return draw;
+    }
     createKeyboard(control){ return new KeyboardText(control); }
     createMouse(control){ return new MouseText(control); }
     createResize(control){ return new ResizeText(control); }

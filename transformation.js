@@ -7,6 +7,8 @@ class Move {
     set active(value){ this.#active = !!value; }
     on(){
         const control = this.control;
+        const mouse = Core.mouse;
+        const transformation = Core.transformation;
         const x = mouse.x - control.form.Inside.x - transformation.offsetX;
         const y = mouse.y - control.form.Inside.y - transformation.offsetY;
 
@@ -96,6 +98,8 @@ class Resize {
         const control = this.control;
         const parent = control.parent;
         const border = control.Border;
+        const mouse = Core.mouse;
+        const transformation = Core.transformation;
         let left = control.Absolute.x;
         let top = control.Absolute.y;
         let right = control.Absolute.x + control.Size.width;
@@ -258,6 +262,8 @@ class Transformation {
     }
     on(){
         const control = this.control;
+        const mouse = Core.mouse;
+        const transformation = Core.transformation;
         if(  transformation.left || transformation.top || transformation.right || transformation.bottom ){
             transformation.control = control;
             transformation.resize = true;

@@ -1,10 +1,11 @@
+
 class Draw {
     #Paint;
     constructor(control){
         this.control = control;
         this.#Paint = null;
         this.#clip = false;
-        this.Theme = new Theme();
+        this.Theme = null;
     }
     #clip;
     get clip(){ return this.#clip === true; }
@@ -12,13 +13,16 @@ class Draw {
 
     get Paint(){
         if(this.#Paint !== null) return this.#Paint;
-        const form = this.control && this.control.form;
-        if(form && form.Draw && form.Draw.Paint != null) return form.Draw.Paint; 
+        const control = this.control;
+        const form = control && control.form;
+        if(form && form.Paint != null) return form.Paint;
+        if (control && control.parent && control.parent.Paint != null) return control.parent.Paint;
         return null;
     }
     set Paint(value){ this.#Paint = value; }    
     execute(){
-        if(dragdrop.control === this.control){
+        const dnd = Core.dragdrop;
+        if(dnd.control === this.control){
             this.drawDrag();
         }else{
             this.draw();
@@ -35,6 +39,8 @@ class Draw {
     draw(){
         const control = this.control;
         const paint = this.Paint;
+        const mousehover = Core.mousehover;
+        const transformation = Core.transformation;
         const rect = control.Rectangle.rectangleBackground();
         this.drawBackground();
         this.drawBorder();

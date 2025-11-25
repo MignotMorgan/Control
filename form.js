@@ -2,7 +2,7 @@
 class Form extends Control {
     constructor(){
         super();
-        controls.push(this);
+        Core.controls.push(this);
     }
     initialize(){
         super.initialize();
@@ -20,6 +20,11 @@ class DrawForm extends Draw {
         super.draw();
         const control = this.control;
         const paint = control.form.Paint;
+        const mouse = Core.mouse;
+        const mousehover = Core.mousehover;
+        const dnd = Core.dragdrop;
+        const transformation = Core.transformation;
+        const focus = Core.focus
         let ix = 20
         let iy = 20;
         paint.drawText(ix, iy, "souris : " + mouse.x + " : " + mouse.y + " temps : " + mouse.time);
@@ -30,7 +35,7 @@ class DrawForm extends Draw {
             paint.drawText(ix, iy, "focus : null");
         }
         //iy += 20;
-        if(mousehover.control != null && mousehover.selected != null){
+            if(mousehover.control != null && mousehover.selected != null){
             iy += 20;
             paint.drawText(ix, iy, "souris dans le contrôle : " + (mouse.x - mousehover.control.form.Inside.x - mousehover.control.Absolute.x) + " : " + (mouse.y - mousehover.control.form.Inside.y - mousehover.control.Absolute.y));
             iy += 20;
@@ -43,11 +48,12 @@ class DrawForm extends Draw {
             paint.drawText(ix, iy, "transformation : null");
 
         iy += 20;
-        paint.drawText(ix, iy, "armed: " + dragdrop.armed + " active: " + dragdrop.active + " control: " + (dragdrop.control === null ? "null" : dragdrop.control.id) + " parent: " + (dragdrop.parent === null ? "null" : dragdrop.parent.id) + " target: " + (dragdrop.target === null ? "null" : dragdrop.target.id));
+        paint.drawText(ix, iy, "armed: " + dnd.armed + " active: " + dnd.active + " control: " + (dnd.control === null ? "null" : dnd.control.id) + " parent: " + (dnd.parent === null ? "null" : dnd.parent.id) + " target: " + (dnd.target === null ? "null" : dnd.target.id));
     }
     drawChildren(){
         super.drawChildren();
-        if(dragdrop.control != null)dragdrop.control.Draw.execute();
+        const dnd = Core.dragdrop;
+        if(dnd.control != null)dnd.control.Draw.execute();
     };
 }
 
@@ -56,6 +62,8 @@ class MoveForm extends Move {
         super(control);
     }
     on(){
+        const mouse = Core.mouse;
+        const transformation = Core.transformation;
         let x = mouse.x - transformation.offsetX;
         let y = mouse.y - transformation.offsetY;
         this.to(x, y);
@@ -75,6 +83,8 @@ class ResizeForm extends Resize {
         super(control);
     }
     on(){
+        const mouse = Core.mouse;
+        const transformation = Core.transformation;
         const control = this.control;
         var left = control.Inside.x;
         var top = control.Inside.y;
@@ -166,6 +176,7 @@ class FactoryForm extends Factory {
         const draw = new DrawForm(control);
         const paint = this.createPaint(control.Inside.x, control.Inside.y, control.Size.width, control.Size.height);
         draw.Paint = paint;
+        draw.Theme = this.createTheme();
         return draw;
     }
     createMove(control){ return new MoveForm(control); }

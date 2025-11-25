@@ -1,14 +1,17 @@
 
-let controls = [];
-let mouse = { x:0, y:0, down:Date.now(), up:Date.now(), time:0 };
-let mousehover = { control:null, selected:null };
-let Modifiers = { shift:false, ctrl:false, alt:false, meta:false, capslock:false, keyCode:0, key:"", shortcut:"" };
+//A FAIRE :
+// Créer une classe Themes pour faires des thème un design pattern poids mouche pour les thèmes
+
+//let controls = [];
+//let mouse = { x:0, y:0, down:Date.now(), up:Date.now(), time:0 };
+//let mousehover = { control:null, selected:null };
+//let modifiers = { shift:false, ctrl:false, alt:false, meta:false, capslock:false, keyCode:0, key:"", shortcut:"" };
 // offset représente le pixel où vous avez cliquer dans le Control (Drag). 
 // Cela permet de ne  pas repositionner le contrôle en alignant son coin haut-gauche directement sous la souris.
 // C'est utilisé pour conserver l'articulation visuelle de la prise, de sorte que le point “saisi” au départ reste sous la souris.
-let dragdrop = { armed:false, active:false, control:null, parent:null, target:null, srcX:0, srcY:0, startX:0, startY:0, offsetX:0, offsetY:0, data:{ text:"", files: null } };
-let transformation = { control:null, offsetX:0, offsetY:0, resize:false, border:5, left:false, top:false, right:false, bottom:false, lock:false };
-let focus = null;
+//let dragdrop = { armed:false, active:false, control:null, parent:null, target:null, srcX:0, srcY:0, startX:0, startY:0, offsetX:0, offsetY:0, data:{ text:"", files: null } };
+//let transformation = { control:null, offsetX:0, offsetY:0, resize:false, border:5, left:false, top:false, right:false, bottom:false, lock:false };
+//let focus = null;
 
 class Control {
     constructor(){
@@ -70,7 +73,7 @@ class Control {
 
     onFocus(){
         if( this.canFocus ){ 
-            focus = this; 
+            Core.focus = this; 
             if(this.parent != null){ this.parent.Lineage.firstPosition(this); }
         } else if( this.parent != null ){
             this.parent.onFocus();

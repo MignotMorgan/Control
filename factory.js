@@ -1,3 +1,4 @@
+
 class Factory {
     create(x, y, width, height=width, top=10, right=top, bottom=top, left=right){
 
@@ -44,8 +45,12 @@ class Factory {
     createResize(control){return new Resize(control); }
     createScale(control){return new Scale(control); }
 
-    createDraw(control){return new Draw(control); }
-
+    createDraw(control){
+        const draw = new Draw(control); 
+        draw.Theme = this.createTheme();
+        return draw;
+    }
+    createTheme(){ return new Theme(); }
     createLineage(control){
         let lineage = new Lineage(control);
         lineage.Drag = this.createDrag(control);

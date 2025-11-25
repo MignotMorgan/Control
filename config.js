@@ -1,6 +1,0 @@
-window.Config = Object.freeze({
-  DRAG_ACTIVATION_THRESHOLD: 6,
-  SNAP_GRID: 10,
-  AUTOSCROLL_THRESHOLD: 20,
-  RESIZE_HANDLE_SIZE: 8
-});

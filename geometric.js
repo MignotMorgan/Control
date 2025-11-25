@@ -31,6 +31,7 @@ class Rectangle {
         this.Border;
     }
     containMouse(){
+        const mouse = Core.mouse;
         return this.contains(mouse.x, mouse.y);
     }
     contains(x, y){

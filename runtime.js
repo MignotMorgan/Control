@@ -1,4 +1,6 @@
+
 function cjsLoop(){
+    const controls = Core.controls;
     for(let i = 0; i < controls.length; i++){
         controls[i].Paint.clear();
         controls[i].onDraw(undefined);
@@ -27,9 +29,14 @@ function queueNewFrame(){
 function onMouseMove(e){
     let x = e.clientX + (document.documentElement.scrollLeft || window.pageXOffset || 0);
     let y = e.clientY + (document.documentElement.scrollTop || window.pageYOffset || 0);
-    
+    const mouse = Core.mouse;
     mouse.x = x;
     mouse.y = y;
+
+    const mousehover = Core.mousehover;
+    const transformation = Core.transformation;
+    const controls = Core.controls;
+    const dnd = Core.dragdrop;
 
     mousehover.selected = null;
     for(let i = controls.length - 1; i >= 0; i--)
@@ -46,7 +53,7 @@ function onMouseMove(e){
         mousehover.control = mousehover.selected;
     }
 
-    if(!!dragdrop.control){ DragDropManager.move(); }
+    if(dnd.control){ DragDropManager.move(); }
 
     if(transformation.control == null){
         transformation.left = false;
@@ -81,6 +88,7 @@ function onMouseMove(e){
 }
 
 function onMouseDownLeft(e){
+    const mousehover = Core.mousehover;
     if( mousehover.control != null){
         mousehover.control.onFocus();
         if(mousehover.control.canDrag){
@@ -93,17 +101,20 @@ function onMouseDownLeft(e){
 }
 
 function onMouseUpLeft(e){
+    const dnd = Core.dragdrop;
+    const transformation = Core.transformation;
+    const mousehover = Core.mousehover;
     transformation.control = null;
     transformation.resize = false;
     //let consumedClick = false;
 
-    if(dragdrop.armed && !dragdrop.active && dragdrop.control){
-        dragdrop.control.Mouse.clickLeft();
-        dragdrop.control.Mouse.clickLeftUp();
+    if(dnd.armed && !dnd.active && dnd.control){
+        dnd.control.Mouse.clickLeft();
+        dnd.control.Mouse.clickLeftUp();
     //    consumedClick = true;
         DragDropManager.reset();
     }
-    else if(dragdrop.active && dragdrop.control){
+    else if(dnd.active && dnd.control){
         DragDropManager.dropControl();
     }
     else if(mousehover.control != null){
@@ -114,6 +125,7 @@ function onMouseUpLeft(e){
 }
 
 function onMouseDownRight(e){
+    const mousehover = Core.mousehover;
     if( mousehover.control != null){
         mousehover.control.onFocus();
         mousehover.control.Transformation.on();
@@ -124,6 +136,8 @@ function onMouseDownRight(e){
 }
 
 function onMouseUpRight(e){
+    const mouse = Core.mouse;
+    const mousehover = Core.mousehover;
     mouse.time = mouse.up - mouse.down;
 
     if( mousehover.control != null){
@@ -134,6 +148,7 @@ function onMouseUpRight(e){
 };
 
 function onMouseDown(e){
+    const mouse = Core.mouse;
     mouse.down = Date.now();
 
     if (e.button === 2) { onMouseDownRight(e); }
@@ -141,6 +156,7 @@ function onMouseDown(e){
 }
 
 function onMouseUp(e){
+    const mouse = Core.mouse;
     mouse.up = Date.now();
     mouse.time = mouse.up - mouse.down;
 
@@ -149,26 +165,30 @@ function onMouseUp(e){
 }
 
 function onClear(){
+    const transformation = Core.transformation;
     transformation.control = null;
     transformation.resize = false;
     transformation.lock = false;
 };
 
 function onKeyDown(e){
-    Modifiers.shift = e.shiftKey;
-    Modifiers.ctrl = e.ctrlKey;
-    Modifiers.alt = e.altKey;
-    Modifiers.meta = e.metaKey;
-    Modifiers.keyCode = e.keyCode ? e.keyCode : e.which;
-    if(e.key === 'CapsLock') Modifiers.capslock = !Modifiers.capslock;
-    Modifiers.key = e.key;
+    const modifiers = Core.modifiers;
+    const focus = Core.focus;
+
+    modifiers.shift = e.shiftKey;
+    modifiers.ctrl = e.ctrlKey;
+    modifiers.alt = e.altKey;
+    modifiers.meta = e.metaKey;
+    modifiers.keyCode = e.keyCode ? e.keyCode : e.which;
+    if(e.key === 'CapsLock') modifiers.capslock = !modifiers.capslock;
+    modifiers.key = e.key;
     const parts = [];
-    if(Modifiers.ctrl) parts.push('Ctrl');
-    if(Modifiers.shift) parts.push('Shift');
-    if(Modifiers.alt) parts.push('Alt');
-    if(Modifiers.meta) parts.push('Meta');
+    if(modifiers.ctrl) parts.push('Ctrl');
+    if(modifiers.shift) parts.push('Shift');
+    if(modifiers.alt) parts.push('Alt');
+    if(modifiers.meta) parts.push('Meta');
     if(e.key && e.key.length > 0) parts.push(e.key);
-    Modifiers.shortcut = parts.join('+');
+    modifiers.shortcut = parts.join('+');
 
     if(focus !== null){
         focus.Input.Keyboard.keyDown();
@@ -176,18 +196,23 @@ function onKeyDown(e){
 }
 
 function onKeyUp(e){
-    Modifiers.shift = e.shiftKey;
-    Modifiers.ctrl = e.ctrlKey;
-    Modifiers.alt = e.altKey;
-    Modifiers.meta = e.metaKey;
-    Modifiers.keyCode = e.keyCode ? e.keyCode : e.which;
-    Modifiers.key = e.key;
+    const modifiers = Core.modifiers;
+    const focus = Core.focus;
+
+    modifiers.shift = e.shiftKey;
+    modifiers.ctrl = e.ctrlKey;
+    modifiers.alt = e.altKey;
+    modifiers.meta = e.metaKey;
+    modifiers.keyCode = e.keyCode ? e.keyCode : e.which;
+    modifiers.key = e.key;
     if(focus !== null){
         focus.Input.Keyboard.keyUp();
     }
 }
 
 function onWheel(e){
+    const focus = Core.focus;
+    const mousehover = Core.mousehover;
     let deltaX = 0;
     let deltaY = 0;
     if('deltaY' in e || 'deltaX' in e){

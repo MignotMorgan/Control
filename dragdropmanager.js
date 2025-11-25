@@ -1,11 +1,12 @@
 class DragDropManager {
   static start(){
-    const dnd = dragdrop;
-    const control = mousehover.control;
+    const mouse = Core.mouse;
+    const dnd = Core.dragdrop;
+    const control = Core.mousehover.control;
     dnd.control = control;
     dnd.parent = control.parent || null;
     dnd.startX = mouse.x;
-    dnd.startY = mouse.y
+    dnd.startY = mouse.y;
     dnd.offsetX = mouse.x - control.form.Inside.x - control.Absolute.x;
     dnd.offsetY = mouse.y - control.form.Inside.y - control.Absolute.y;
     dnd.srcX = control.Absolute.x;
@@ -15,12 +16,14 @@ class DragDropManager {
     control.Drag.start();
   }
   static move(){
-    const dnd = dragdrop;
+    const mouse = Core.mouse;
+    const mousehover = Core.mousehover;
+    const dnd = Core.dragdrop;
     const control = dnd.control;
     if (dnd.armed && !dnd.active){
       const dx = Math.abs(mouse.x - dnd.startX);
       const dy = Math.abs(mouse.y - dnd.startY);
-      if (dx + dy >= Config.DRAG_ACTIVATION_THRESHOLD){
+      if (dx + dy >= Core.DRAG_ACTIVATION){
         dnd.active = true;
       }
     }
@@ -32,7 +35,9 @@ class DragDropManager {
     if(dnd.target && dnd.target.clip){ this.autoScroll(dnd.target, mouse.x, mouse.y); }
   }
   static dropControl(){
-    const dnd = dragdrop;
+    const mouse = Core.mouse;
+    const mousehover = Core.mousehover;
+    const dnd = Core.dragdrop;
     const control = dnd.control;
     let target = dnd.target;
     if(!control){ this.reset(); return; }
@@ -62,7 +67,7 @@ class DragDropManager {
     const innerW = container.Size.width - container.Border.left - container.Border.right;
     const innerH = container.Size.height - container.Border.top - container.Border.bottom;
     if(innerW <= 0 || innerH <= 0) return;
-    const threshold = Config.AUTOSCROLL_THRESHOLD;
+    const threshold = Core.AUTOSCROLL;
     const localX = mouseX - container.form.Inside.x - container.Absolute.x - container.Border.left;
     const localY = mouseY - container.form.Inside.y - container.Absolute.y - container.Border.top;
     let stepV = 0, stepH = 0;
@@ -74,41 +79,46 @@ class DragDropManager {
     container.Move.scroll(stepV, stepH);
   }
    static restore(){
-    const dnd = dragdrop;
+    const dnd = Core.dragdrop;
     const control = dnd.control;
     if(!control){ this.reset(); return; }
     control.Move.to(dnd.srcX, dnd.srcY);
     this.reset();
   }
   static reset(){
-    dragdrop.armed = false;
-    dragdrop.active = false;
-    dragdrop.control = null;
-    dragdrop.parent = null;
-    dragdrop.target = null;
-    dragdrop.srcX = 0;
-    dragdrop.srcY = 0;
-    dragdrop.startX = 0;
-    dragdrop.startY = 0;
-    dragdrop.offsetX = 0;
-    dragdrop.offsetY = 0;
-    dragdrop.data = { text: "", files: null };
+    const dnd = Core.dragdrop;
+    dnd.armed = false;
+    dnd.active = false;
+    dnd.control = null;
+    dnd.parent = null;
+    dnd.target = null;
+    dnd.srcX = 0;
+    dnd.srcY = 0;
+    dnd.startX = 0;
+    dnd.startY = 0;
+    dnd.offsetX = 0;
+    dnd.offsetY = 0;
+    dnd.data = { text: "", files: null };
   }
 
   static dragenter(){
-    if(dragdrop.control){ dragdrop.control.Drag.enter(); }
-    if(dragdrop.target){ dragdrop.target.Drop.enter(); }
+    const dnd = Core.dragdrop;
+    if(dnd.control){ dnd.control.Drag.enter(); }
+    if(dnd.target){ dnd.target.Drop.enter(); }
   }
   static dragover(){
-    if(dragdrop.control){ dragdrop.control.Drag.over(); }
-    if(dragdrop.target){ dragdrop.target.Drop.over(); }
+    const dnd = Core.dragdrop;
+    if(dnd.control){ dnd.control.Drag.over(); }
+    if(dnd.target){ dnd.target.Drop.over(); }
   }
   static dragleave(){
-    if(dragdrop.control){ dragdrop.control.Drag.leave(); }
-    if(dragdrop.target){ dragdrop.target.Drop.leave(); }
+    const dnd = Core.dragdrop;
+    if(dnd.control){ dnd.control.Drag.leave(); }
+    if(dnd.target){ dnd.target.Drop.leave(); }
   }
   static drop(){
-    if(dragdrop.control){ dragdrop.control.Drag.drop(); }
-    if(dragdrop.target){ dragdrop.target.Drop.drop(); }
+    const dnd = Core.dragdrop;
+    if(dnd.control){ dnd.control.Drag.drop(); }
+    if(dnd.target){ dnd.target.Drop.drop(); }
   }
 }

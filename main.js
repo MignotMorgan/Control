@@ -132,7 +132,7 @@ form.add(textArea);
     themedBgCtrl.id = "themedBg";
     themedBgCtrl.canMove = true;
     themedBgCtrl.canResize = true;
-    themedBgCtrl.Draw.Theme.backgroundImage = "Background.jpg";
+    themedBgCtrl.Theme.backgroundImage = "Background.jpg";
     form.add(themedBgCtrl);
 
     const themedBorderCtrl = factory.create(1200, 400, 500, 350);
