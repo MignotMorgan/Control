@@ -50,7 +50,7 @@ class Factory {
         draw.Theme = this.createTheme();
         return draw;
     }
-    createTheme(){ return new Theme(); }
+    createTheme(){ return Themes.default; }
     createLineage(control){
         let lineage = new Lineage(control);
         lineage.Drag = this.createDrag(control);

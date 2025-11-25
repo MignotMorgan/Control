@@ -70,7 +70,7 @@ class Draw {
         const theme = this.Theme.background;
 
         paint.drawRectangle(rect.x, rect.y, rect.width, rect.height, theme.color);
-        if(theme.image.Url){
+        if(theme.image.Url !== ""){
             this.drawBackgroundImage( rect.x, rect.y, rect.width, rect.height, this.Theme.backgroundImage, theme.image.mode);
         }
         if (theme.rectangle.lineWidth > 0){
@@ -153,6 +153,13 @@ class Draw {
                 paint.borderRectangle(hx, hy, hs, hs, "#2979ff");
             }
         });
+    }
+    customTheme(){
+        if(this.Theme.customized){ return this.Theme; }
+        this.Theme = this.Theme.clone(`${this.Theme.name}_clone_${Date.now()}`);
+        this.Theme.customized = true;
+        Themes.add(this.Theme);
+        return this.Theme;
     }
 
 }

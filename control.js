@@ -41,6 +41,7 @@ class Control {
     get Mouse(){ return this.Input.Mouse; }
     get Keyboard(){ return this.Input.Keyboard; }
     get Theme(){ return this.Draw.Theme; }
+    get customTheme(){ return this.Draw.customTheme(); }
 
     get canMove(){ return this.Geometric.Transformation.Move.active; }
     set canMove(value){ this.Geometric.Transformation.Move.active = value; }

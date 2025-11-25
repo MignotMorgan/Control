@@ -5,6 +5,8 @@ window.onload = ()=>{
     form.canMove = true;
     form.canResize = true;
     form.canScale = true;
+    form.customTheme.background.color = "#05f053ff";
+    form.customTheme.background.border.color = "#0515f0ff";
 
     let control = factory.create(200, 100, 350, 250);
     control.id = "01";
@@ -20,6 +22,7 @@ window.onload = ()=>{
     control_11.canResize = true;
     control_11.canDrag = true;
     control_11.canDrop = true;
+    control_11.customTheme.background.border.color = "#f0a605ff";
     control.add(control_11);
 
     let control_12 = factory.create(20, 10, 50, 50);
@@ -27,12 +30,14 @@ window.onload = ()=>{
     control_12.canMove = true;
     control_12.canResize = true;
     control_12.canDrag = true;
+    control_12.customTheme.background.border.color = "#f0a605ff";
     control_11.add(control_12);
 
     let control_2 = factory.create(-25, -5, 200, 600); 
     control_2.id = "02";
     control_2.canMove = true;
-    control_2.canDrag = true; 
+    control_2.canDrag = true;
+    control_2.customTheme.background.border.color = "#f0a605ff"; 
     control.add(control_2);
     
     let control_25 = factory.create(20, 0, 100, 100);
@@ -56,6 +61,7 @@ window.onload = ()=>{
     control_5.id = "05";
     control_5.canMove = true;
     control_5.canDrag = true; 
+    control_5.customTheme.background.border.color = "#f0a605ff";
     control_4.add(control_5);
 
     let control_6 = factory.create(700,325, 500, 400);
@@ -132,7 +138,7 @@ form.add(textArea);
     themedBgCtrl.id = "themedBg";
     themedBgCtrl.canMove = true;
     themedBgCtrl.canResize = true;
-    themedBgCtrl.Theme.backgroundImage = "Background.jpg";
+    themedBgCtrl.customTheme.backgroundImage = "Background.jpg";
     form.add(themedBgCtrl);
 
     const themedBorderCtrl = factory.create(1200, 400, 500, 350);
