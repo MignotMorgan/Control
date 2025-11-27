@@ -68,15 +68,34 @@ class DragDropManager {
     const innerH = container.Size.height - container.Border.top - container.Border.bottom;
     if(innerW <= 0 || innerH <= 0) return;
     const threshold = Core.AUTOSCROLL;
+    const speed = Core.AUTOSCROLL_SPEED;
     const localX = mouseX - container.form.Inside.x - container.Absolute.x - container.Border.left;
     const localY = mouseY - container.form.Inside.y - container.Absolute.y - container.Border.top;
     let stepV = 0, stepH = 0;
-    if(localY < threshold){ stepV = (threshold - localY) * 0.5; }
-    else if(localY > innerH - threshold){ stepV = -(localY - (innerH - threshold)) * 0.5; }
-    if(localX < threshold){ stepH = (threshold - localX) * 0.5; }
-    else if(localX > innerW - threshold){ stepH = -(localX - (innerW - threshold)) * 0.5; }
+    if(localY < threshold){ stepV = (threshold - localY) * speed; }
+    else if(localY > innerH - threshold){ stepV = -(localY - (innerH - threshold)) * speed; }
+    if(localX < threshold){ stepH = (threshold - localX) * speed; }
+    else if(localX > innerW - threshold){ stepH = -(localX - (innerW - threshold)) * speed; }
     if(stepV === 0 && stepH === 0) return;
+/*
+    const dnd = Core.dragdrop;
+    if(dnd.active && dnd.control && dnd.control.Lineage.isAncestor(container)){
+
+      const oldX = dnd.control.Absolute.x;
+      const oldY = dnd.control.Absolute.y;
+      container.Move.scroll(stepV, stepH);
+      const newX = dnd.control.Absolute.x;
+      const newY = dnd.control.Absolute.y;
+
+      dnd.offsetX += newX - oldX;
+      dnd.offsetY += newY - oldY;
+    }
+    else{
+      container.Move.scroll(stepV, stepH);
+    }
+*/
     container.Move.scroll(stepV, stepH);
+
   }
    static restore(){
     const dnd = Core.dragdrop;

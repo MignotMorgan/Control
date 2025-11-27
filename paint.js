@@ -148,15 +148,15 @@ class PaintCanvas extends Paint {
     }
     drawLine(x1, y1, x2, y2, color = "black", lineWidth = 1){
         const ctx = this.context;
-        const prevFill = ctx.fillStyle;
+        const prevStroke = ctx.strokeStyle;
         const prevLine = ctx.lineWidth;
-        ctx.fillStyle = color;
+        ctx.strokeStyle = color;
         ctx.lineWidth = lineWidth;
         ctx.beginPath();
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
         ctx.stroke();
-        ctx.fillStyle = prevFill;
+        ctx.strokeStyle = prevStroke;
         ctx.lineWidth = prevLine;
     }
     drawText(x, y, text, font){

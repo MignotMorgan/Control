@@ -49,14 +49,15 @@ class CursorText {
     set y(value){ this.#y = value; }
     get lastX(){ return this.#lastX; }
     set lastX(value){ this.#lastX = value; }
+
+    get color(){ return this.control.Theme.text.cursor.color; }
+    get lineWidth(){ return this.control.Theme.text.cursor.lineWidth; }
 }
 class ControlText extends Control {
     #text = "";
     #lines = [""];
+    #cursor = null;
     #modified = false;
-    #margin = {top: 10, right: 10, bottom: 10, left: 10}
-    #cursor = new CursorText(this);
-    #scroll = 6;
     constructor() {
         super();
 
@@ -74,14 +75,15 @@ class ControlText extends Control {
     set text(value){ this.#text = value; this.modified = true; }
     get lines(){ return this.#lines; }
     set lines(value){ this.#lines = value; }
+    get cursor(){ return this.#cursor; }
+    set cursor(value){ this.#cursor = value; }
     get modified(){ return this.#modified; }
     set modified(value){ this.#modified = value; }
 
-    get cursor(){ return this.#cursor; }
-    get margin(){ return this.#margin; }
-    get font(){ return this.Theme?.background?.font; }
-    get scroll(){ return this.#scroll; }
-    set scroll(value){ this.#scroll = value; }
+    get font(){ return this.Theme.text.font; }
+    get margin(){ return this.Theme.text.margin; }
+    get scroll(){ return this.Theme.text.scroll; }
+    set scroll(value){ this.Theme.text.scroll = value; }
     
     initialize(){
         super.initialize();
@@ -310,7 +312,8 @@ class DrawText extends Draw {
         paint.drawLine(
             rect.x + cursor.x, rect.y + cursor.y, 
             rect.x + cursor.x, rect.y + cursor.y + font.size,
-            font.color || 'black', 1
+            control.cursor.color,
+            control.cursor.lineWidth
         );
         paint.restore();
     }
@@ -430,7 +433,12 @@ class ScaleText extends Scale {
 }
 
 class FactoryText extends Factory{
-    createControl(){ return new ControlText(); }
+    createControl(){ 
+        const control = new ControlText(); 
+        control.cursor = this.createCursor(control);
+        return control;
+    }
+    createCursor(control){ return new CursorText(control); }
     createDraw(control){
         const draw = new DrawText(control); 
         draw.Theme = this.createTheme();

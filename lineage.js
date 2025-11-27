@@ -59,4 +59,11 @@ class Lineage {
         }
         if(this.parent != null) this.parent.Lineage.firstPosition(this.control);
     }
+    isAncestor(ancestor){
+        const control = this.control;
+        const parent = control.parent;
+        if(control === ancestor){return true ;}
+        else if (parent){ return parent.Lineage.isAncestor(ancestor); }
+        else { return false; }
+    }
 }

@@ -42,6 +42,12 @@ class Theme {
         font : { family: "Arial", size: 16, style: "bold", color: "#000" }
     };
     #drag = { color: "#2979ff", alpha: 0.5 };
+    #text = { 
+        font : { family: "Arial", size: 16, style: "bold", color: "#000" },
+        cursor:{ color: "#000", lineWidth: 1 },
+        margin: Core.TEXTMARGIN, 
+        scroll: Core.TEXTSCROLL 
+    };
     
     constructor(name = "default"){
         this.#name = name;
@@ -50,6 +56,7 @@ class Theme {
     get name(){ return this.#name;}
     get background(){ return this.#background;}
     get drag(){ return this.#drag;}
+    get text(){ return this.#text;}
     get backgroundImage(){ return ThemeImages.get(this.background.image.Url);}
     set backgroundImage(value){this.background.image.Url = value; ThemeImages.add(value);}
 
