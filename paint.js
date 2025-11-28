@@ -1,4 +1,4 @@
-class Paint {
+export class Paint {
     constructor(x, y, width, height, hide = false){
         this.hide = hide;
     }
@@ -28,7 +28,7 @@ class Paint {
     dispose(){ throw new Error('Paint.dispose() must be implemented by the subclass'); }
 }
 
-class PaintCanvas extends Paint {
+export class PaintCanvas extends Paint {
     constructor(x, y, width, height, hide = false){
         super(x, y, width, height, hide);
         this.canvas = document.createElement('canvas');

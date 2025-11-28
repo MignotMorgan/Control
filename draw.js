@@ -1,5 +1,7 @@
+import { Core } from './core.js';
+import { Themes } from './theme.js';
 
-class Draw {
+export class Draw {
     #Paint;
     constructor(control){
         this.control = control;

@@ -1,4 +1,6 @@
-class Mouse {
+import { Core } from './core.js';
+
+export class Mouse {
     constructor(control){
         this.control = control;
     }
@@ -48,7 +50,7 @@ class Mouse {
     wheel(deltaX, deltaY){}
 }
 
-class Keyboard {
+export class Keyboard {
     constructor(control){
         this.control = control;
     }
@@ -56,7 +58,7 @@ class Keyboard {
     keyUp(){}
 }
 
-class Input {
+export class Input {
     constructor(control){
         this.control = control;
         this.Mouse;

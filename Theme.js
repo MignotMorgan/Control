@@ -1,4 +1,6 @@
-class ThemeImages {
+import { Core } from './core.js';
+
+export class ThemeImages {
     static #images = new Map();
     static get(url){
         if(this.#images.has(url)){return this.#images.get(url);}
@@ -13,7 +15,7 @@ class ThemeImages {
     }
 }
 
-class Themes {
+export class Themes {
     static #themes = new Map();
     static #default = null;
     static get default(){
@@ -31,7 +33,7 @@ class Themes {
     }
 }
 
-class Theme {
+export class Theme {
     #name;
     #customized = false;
     #background = {

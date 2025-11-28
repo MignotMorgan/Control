@@ -1,3 +1,5 @@
+import { Core } from './core.js';
+import { DragDropManager } from './dragdropmanager.js';
 
 function cjsLoop(){
     const controls = Core.controls;
@@ -254,12 +256,13 @@ function onDragLeave(e){
 }
 
 function onDrop(e){
+    const dnd = Core.dragdrop;
     e.preventDefault();
     onMouseMove(e);
     try{
         if(e.dataTransfer){
-            dragdrop.data.text = e.dataTransfer.getData('text') || e.dataTransfer.getData('text/plain') || "";
-            dragdrop.data.files = (e.dataTransfer.files && e.dataTransfer.files.length) ? e.dataTransfer.files : null;
+            dnd.data.text = e.dataTransfer.getData('text') || e.dataTransfer.getData('text/plain') || "";
+            dnd.data.files = (e.dataTransfer.files && e.dataTransfer.files.length) ? e.dataTransfer.files : null;
         }
     }catch(err){ }
     DragDropManager.drop();

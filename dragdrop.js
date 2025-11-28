@@ -1,4 +1,4 @@
-class Drag {
+export class Drag {
     #active = false;
     constructor(control){
         this.control = control;
@@ -14,7 +14,7 @@ class Drag {
     drop(){}
 }
 
-class Drop {
+export class Drop {
     #active = false;
     constructor(control){
         this.control = control;

@@ -1,5 +1,13 @@
+import { Control } from './control.js';
+import { Geometric, Rectangle, Point, Size, Border } from './geometric.js';
+import { Transformation, Move, Resize, Scale } from './transformation.js';
+import { Draw } from './draw.js';
+import { Themes } from './theme.js';
+import { Lineage } from './lineage.js';
+import { Drag, Drop } from './dragdrop.js';
+import { Input, Mouse, Keyboard } from './input.js';
 
-class Factory {
+export class Factory {
     create(x, y, width, height=width, top=10, right=top, bottom=top, left=right){
 
         let control = this.createControl();

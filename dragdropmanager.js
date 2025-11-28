@@ -1,4 +1,6 @@
-class DragDropManager {
+import { Core } from './core.js';
+
+export class DragDropManager {
   static start(){
     const mouse = Core.mouse;
     const dnd = Core.dragdrop;

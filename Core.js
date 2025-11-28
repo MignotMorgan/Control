@@ -1,6 +1,6 @@
 
 
-class Core {
+export class Core {
     static #version = "1.0.0";
     static #controls = [];
     static #mouse = { x:0, y:0, down:Date.now(), up:Date.now(), time:0 };

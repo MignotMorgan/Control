@@ -1,3 +1,8 @@
+import './runtime.js';
+import { Factory } from './factory.js';
+import { FactoryForm } from './form.js';
+import { FactoryText } from './controltext.js';
+
 window.onload = ()=>{
     let factory = new Factory();
     let form = (new FactoryForm).create(100, 10, 1750, 750);

@@ -1,4 +1,6 @@
-class Move {
+import { Core } from './core.js';
+
+export class Move {
     #active = false;
     constructor(control){
         this.control = control;
@@ -87,7 +89,7 @@ class Move {
     }
 }
 
-class Resize {
+export class Resize {
     #active = false;
     constructor(control){
         this.control = control;
@@ -193,7 +195,7 @@ class Resize {
     parentResize(){}
 }
 
-class Scale {
+export class Scale {
     #active = false;
     constructor(control){
         this.control = control;
@@ -253,7 +255,7 @@ class Scale {
 
 }
 
-class Transformation {
+export class Transformation {
     constructor(control){
         this.control = control;
         this.Move;

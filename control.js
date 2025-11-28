@@ -1,6 +1,6 @@
+import { Core } from './core.js';
 
-
-class Control {
+export class Control {
     constructor(){
         this.Geometric;
         this.Draw;

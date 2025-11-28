@@ -1,5 +1,12 @@
+import { Control } from './control.js';
+import { Core } from './core.js';
+import { Draw } from './draw.js';
+import { Move, Resize, Scale } from './transformation.js';
+import { Rectangle, Point, Size, Border } from './geometric.js';
+import { PaintCanvas } from './paint.js';
+import { Factory } from './factory.js';
 
-class Form extends Control {
+export class Form extends Control {
     constructor(){
         super();
         Core.controls.push(this);
@@ -12,7 +19,7 @@ class Form extends Control {
     }    
 }
 
-class DrawForm extends Draw {
+export class DrawForm extends Draw {
     constructor(control){
         super(control);
     }
@@ -57,7 +64,7 @@ class DrawForm extends Draw {
     };
 }
 
-class MoveForm extends Move {
+export class MoveForm extends Move {
     constructor(control){
         super(control);
     }
@@ -78,7 +85,7 @@ class MoveForm extends Move {
     }
 }
 
-class ResizeForm extends Resize {
+export class ResizeForm extends Resize {
     constructor(control){
         super(control);
     }
@@ -128,7 +135,7 @@ class ResizeForm extends Resize {
     };
 }
 
-class ScaleForm extends Scale {
+export class ScaleForm extends Scale {
     constructor(control){
         super(control);
     }
@@ -160,7 +167,7 @@ class ScaleForm extends Scale {
 
 }
 
-class FactoryForm extends Factory {  
+export class FactoryForm extends Factory {  
     createControl(){return new Form(); }
     createPaint(x, y, width, height, hide = false){ return new PaintCanvas(x, y, width, height, hide);}
     createRectangle(control, x, y, width, height, top, right, bottom, left){

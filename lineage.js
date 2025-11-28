@@ -1,4 +1,4 @@
-class Lineage {
+export class Lineage {
     constructor(control){
         this.control = control;
         this.Drag;

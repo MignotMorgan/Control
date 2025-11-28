@@ -1,4 +1,9 @@
-
+import { Control } from './control.js';
+import { Core } from './core.js';
+import { Draw } from './draw.js';
+import { Mouse, Keyboard } from './input.js';
+import { Resize, Scale } from './transformation.js';
+import { Factory } from './factory.js';
 
 // textcontrol.js
 // Contrôle d'édition de texte simplifié et évolutif
@@ -27,7 +32,7 @@
  *   - selectAll() - Sélectionne tout le texte
  *   - getSelectedText() - Récupère le texte sélectionné
  */
-class CursorText {
+export class CursorText {
     #position = 0;
     #line = 0;
     #column = 0;
@@ -53,7 +58,7 @@ class CursorText {
     get color(){ return this.control.Theme.text.cursor.color; }
     get lineWidth(){ return this.control.Theme.text.cursor.lineWidth; }
 }
-class ControlText extends Control {
+export class ControlText extends Control {
     #text = "";
     #lines = [""];
     #cursor = null;
@@ -258,7 +263,7 @@ class ControlText extends Control {
 // CLASSE TEXTDRAW - Rendu visuel
 // ================================================
 
-class DrawText extends Draw {
+export class DrawText extends Draw {
     constructor(control) {
         super(control);
     }
@@ -323,7 +328,7 @@ class DrawText extends Draw {
 // CLASSE TEXTMOUSE - Gestion de la souris
 // ================================================
 
-class MouseText extends Mouse {
+export class MouseText extends Mouse {
     constructor(control) {
         super(control);
     }
@@ -354,7 +359,7 @@ class MouseText extends Mouse {
 // CLASSE TEXTKEYBOARD - Gestion du clavier
 // ================================================
 
-class KeyboardText extends Keyboard {
+export class KeyboardText extends Keyboard {
     constructor(control) {
         super(control);
     }
@@ -412,7 +417,7 @@ class KeyboardText extends Keyboard {
     }
 }
 
-class ResizeText extends Resize {
+export class ResizeText extends Resize {
     constructor(control){
         super(control);
     }
@@ -422,7 +427,7 @@ class ResizeText extends Resize {
     };
 }
 
-class ScaleText extends Scale {
+export class ScaleText extends Scale {
     constructor(control){
         super(control);
     }
@@ -432,7 +437,7 @@ class ScaleText extends Scale {
     };
 }
 
-class FactoryText extends Factory{
+export class FactoryText extends Factory{
     createControl(){ 
         const control = new ControlText(); 
         control.cursor = this.createCursor(control);

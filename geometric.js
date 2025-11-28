@@ -1,18 +1,20 @@
-class Point {
+import { Core } from './core.js';
+
+export class Point {
     constructor(x, y){
         this.x = x;
         this.y = y;
     }
 }
 
-class Size {
+export class Size {
     constructor(width, height){
         this.width = width;
         this.height = height;
     }
 }
 
-class Border {
+export class Border {
     constructor(top, right, bottom, left){
         this.top = top;
         this.right = right;
@@ -21,7 +23,7 @@ class Border {
     }
 }
 
-class Rectangle {
+export class Rectangle {
     constructor(control){
         this.control = control;
         this.Location;
@@ -51,7 +53,7 @@ class Rectangle {
     }
 }
 
-class Geometric {
+export class Geometric {
     constructor(control){
         this.control = control;
         this.Rectangle;
