@@ -66,4 +66,10 @@ export class Lineage {
         else if (parent){ return parent.Lineage.isAncestor(ancestor); }
         else { return false; }
     }
+    updateChildren(){
+        const children = this.children;
+        if(children && children.length > 0)
+            for(let i = 0; i < children.length; i++)
+                children[i].update();
+    }
 }

@@ -2,18 +2,26 @@ import './runtime.js';
 import { Factory } from './factory.js';
 import { FactoryForm } from './form.js';
 import { FactoryText } from './controltext.js';
+import { FactoryControlInfo } from './Controls/controlInfo.js';
 
 window.onload = ()=>{
     let factory = new Factory();
     let form = (new FactoryForm).create(100, 10, 1750, 750);
-    form.id = "00";
+    form.id = "form";
     form.canMove = true;
     form.canResize = true;
     form.canScale = true;
     form.customTheme.background.color = "#05f053ff";
     form.customTheme.background.border.color = "#0515f0ff";
 
-    let control = factory.create(200, 100, 350, 250);
+    let factoryInfo = new FactoryControlInfo();
+    let controlInfo = factoryInfo.create(10, 10, 575, 155);
+    controlInfo.id = "info";
+    controlInfo.canMove = true;
+    controlInfo.canResize = true;
+    form.add(controlInfo);
+
+    let control = factory.create(200, 200, 350, 250);
     control.id = "01";
     control.canMove = true;
     control.canResize = true;

@@ -63,6 +63,7 @@ export class ControlText extends Control {
     #lines = [""];
     #cursor = null;
     #modified = false;
+    #scroll = 0;
     constructor() {
         super();
 
@@ -87,8 +88,8 @@ export class ControlText extends Control {
 
     get font(){ return this.Theme.text.font; }
     get margin(){ return this.Theme.text.margin; }
-    get scroll(){ return this.Theme.text.scroll; }
-    set scroll(value){ this.Theme.text.scroll = value; }
+    get scroll(){ return this.#scroll; }
+    set scroll(value){ this.#scroll = value; }
     
     initialize(){
         super.initialize();
@@ -297,8 +298,6 @@ export class DrawText extends Draw {
             }
         }
         this.drawCursor();
-
-        paint.drawText(rect.x, rect.y, "scroll :" + control.scroll, font);
     }
     drawCursor(){
         const control = this.control;

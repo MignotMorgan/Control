@@ -12,7 +12,12 @@ export class Control {
         this.canFocus = true;
     }
     initialize(){}
-
+    update(){ 
+        this.tick();
+        this.Lineage.updateChildren();
+    }
+    tick(){}
+    
     get Paint(){ return this.Draw.Paint; }
     get Rectangle(){ return this.Geometric.Rectangle; }
     get Absolute(){ return this.Geometric.Rectangle.Absolute; }

@@ -25,37 +25,6 @@ export class DrawForm extends Draw {
     }
     draw(){
         super.draw();
-        const control = this.control;
-        const paint = control.form.Paint;
-        const mouse = Core.mouse;
-        const mousehover = Core.mousehover;
-        const dnd = Core.dragdrop;
-        const transformation = Core.transformation;
-        const focus = Core.focus
-        let ix = 20
-        let iy = 20;
-        paint.drawText(ix, iy, "souris : " + mouse.x + " : " + mouse.y + " temps : " + mouse.time);
-        iy += 20;
-        if (focus !== null){
-            paint.drawText(ix, iy, "focus : " + focus.id );
-        } else {
-            paint.drawText(ix, iy, "focus : null");
-        }
-        //iy += 20;
-            if(mousehover.control != null && mousehover.selected != null){
-            iy += 20;
-            paint.drawText(ix, iy, "souris dans le contrôle : " + (mouse.x - mousehover.control.form.Inside.x - mousehover.control.Absolute.x) + " : " + (mouse.y - mousehover.control.form.Inside.y - mousehover.control.Absolute.y));
-            iy += 20;
-            paint.drawText(ix, iy, "mousehover : " + mousehover.control.id + " X: " + mousehover.control.Inside.x + " Y: " + mousehover.control.Inside.y + " width: " + mousehover.control.Size.width + " height: " + mousehover.control.Size.height + " parent: " + (mousehover.control.parent === null ? "null" : mousehover.control.parent.id));
-        }
-        iy += 20;
-        if(transformation.control != null)
-            paint.drawText(ix, iy, "transformation : " + transformation.control.id + " redim: " + transformation.resize + " gauche: " + transformation.left + " haut: " + transformation.top + " droite: " + transformation.right + " bas: " + transformation.bottom);
-        else
-            paint.drawText(ix, iy, "transformation : null");
-
-        iy += 20;
-        paint.drawText(ix, iy, "armed: " + dnd.armed + " active: " + dnd.active + " control: " + (dnd.control === null ? "null" : dnd.control.id) + " parent: " + (dnd.parent === null ? "null" : dnd.parent.id) + " target: " + (dnd.target === null ? "null" : dnd.target.id));
     }
     drawChildren(){
         super.drawChildren();

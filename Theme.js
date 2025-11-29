@@ -47,8 +47,7 @@ export class Theme {
     #text = { 
         font : { family: "Arial", size: 16, style: "bold", color: "#000" },
         cursor:{ color: "#000", lineWidth: 1 },
-        margin: Core.TEXTMARGIN, 
-        scroll: Core.TEXTSCROLL 
+        margin: {top: 10, right: 10, bottom: 10, left: 10}
     };
     
     constructor(name = "default"){

@@ -14,9 +14,6 @@ export class Core {
     static #AUTOSCROLL = 20;
     static #AUTOSCROLL_SPEED = 0.5;
 
-    static #TEXTMARGIN = {top: 10, right: 10, bottom: 10, left: 10};
-    static #TEXTSCROLL = 6;
-
     constructor() {
     }
     static get version(){ return this.#version; }
@@ -32,6 +29,4 @@ export class Core {
     static get DRAG_ACTIVATION(){ return this.#DRAG_ACTIVATION; }
     static get AUTOSCROLL(){ return this.#AUTOSCROLL; }
     static get AUTOSCROLL_SPEED(){ return this.#AUTOSCROLL_SPEED; }
-    static get TEXTMARGIN(){ return this.#TEXTMARGIN; }
-    static get TEXTSCROLL(){ return this.#TEXTSCROLL; }
 }
