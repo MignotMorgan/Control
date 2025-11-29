@@ -170,22 +170,9 @@ export class ScaleForm extends Scale {
 export class FactoryForm extends Factory {  
     createControl(){return new Form(); }
     createPaint(x, y, width, height, hide = false){ return new PaintCanvas(x, y, width, height, hide);}
-    createRectangle(control, x, y, width, height, top, right, bottom, left){
-        let rectangle = new Rectangle(control);
-        rectangle.Location = this.createPoint(0, 0);
-        rectangle.Absolute = this.createPoint(0, 0);
-        rectangle.Inside = this.createPoint(x, y);
-        rectangle.Size = this.createSize(width, height);
-        rectangle.Border = this.createBorder(top, right, bottom, left);
-        return rectangle;
-    }
-    createDraw(control){
-        const draw = new DrawForm(control);
-        const paint = this.createPaint(control.Inside.x, control.Inside.y, control.Size.width, control.Size.height);
-        draw.Paint = paint;
-        draw.Theme = this.createTheme();
-        return draw;
-    }
+    createLocation(x, y){ return new Point(0, 0); }
+    createAbsolute(x, y){ return new Point(0, 0); }
+    createDraw(control){ return new DrawForm(control); }
     createMove(control){ return new MoveForm(control); }
     createResize(control){ return new ResizeForm(control); }
     createScale(control){ return new ScaleForm(control); }

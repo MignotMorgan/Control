@@ -17,8 +17,8 @@ export class Draw {
         if(this.#Paint !== null) return this.#Paint;
         const control = this.control;
         const form = control && control.form;
-        if(form && form.Paint != null) return form.Paint;
-        if (control && control.parent && control.parent.Paint != null) return control.parent.Paint;
+        if(form && form.Paint !== null) return form.Paint;
+        if (control && control.parent && control.parent.Paint !== null) return control.parent.Paint;
         return null;
     }
     set Paint(value){ this.#Paint = value; }    

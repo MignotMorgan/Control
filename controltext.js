@@ -438,17 +438,14 @@ export class ScaleText extends Scale {
 }
 
 export class FactoryText extends Factory{
-    createControl(){ 
-        const control = new ControlText(); 
-        control.cursor = this.createCursor(control);
+    create(x, y, width, height=width, top=10, right=top, bottom=top, left=right){
+        const control = super.create(x, y, width, height, top, right, bottom, left);
+        control.cursor = this.createCursor(control);  
         return control;
-    }
+    }    
+    createControl(){ return new ControlText(); }
     createCursor(control){ return new CursorText(control); }
-    createDraw(control){
-        const draw = new DrawText(control); 
-        draw.Theme = this.createTheme();
-        return draw;
-    }
+    createDraw(control){ return new DrawText(control); }
     createKeyboard(control){ return new KeyboardText(control); }
     createMouse(control){ return new MouseText(control); }
     createResize(control){ return new ResizeText(control); }
