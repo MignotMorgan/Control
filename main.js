@@ -2,7 +2,7 @@ import './runtime.js';
 import { Factory } from './factory.js';
 import { FactoryForm } from './form.js';
 import { FactoryText } from './controltext.js';
-import { FactoryControlInfo } from './Controls/controlInfo.js';
+import { FactoryControlInfo } from './Controls/controlinfo.js';
 
 window.onload = ()=>{
     let factory = new Factory();
