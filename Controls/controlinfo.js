@@ -9,14 +9,16 @@ export class ControlInfo extends ControlText {
         this.fps = 0;
         this.lastSec = performance.now();
     }
+    initialize(){
+        this.customTheme.text.font = { family: "Arial", size: 12, style: "bold", color: "#000" };
+    }
     tick(){
         super.tick();
-        const control = this.control;
         const mouse = Core.mouse;
         const mousehover = Core.mousehover;
         const dnd = Core.dragdrop;
         const transformation = Core.transformation;
-        const focus = Core.focus
+        const focus = Core.focus;
 
         this.text = "mouse : " + mouse.x + " : " + mouse.y + " temps : " + mouse.time + "\n";
         this.text += "focus : " + (focus === null ? "null" : focus.id) + "\n"; 
