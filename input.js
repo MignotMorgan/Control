@@ -47,6 +47,9 @@ export class Mouse {
     clickLeftUp(){};
     clickRight(){};
     clickRightUp(){};
+    clickMiddle(){};
+    clickMiddleUp(){};
+    dragMiddle(){};
     wheel(deltaX, deltaY){}
 }
 

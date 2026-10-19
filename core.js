@@ -3,7 +3,7 @@
 export class Core {
     static #version = "1.0.0";
     static #controls = [];
-    static #mouse = { x:0, y:0, down:Date.now(), up:Date.now(), time:0 };
+    static #mouse = { x:0, y:0, down:Date.now(), up:Date.now(), time:0, left:false, middle:false, right:false };
     static #mousehover = { control:null, selected:null };
     static #modifiers = { shift:false, ctrl:false, alt:false, meta:false, capslock:false, keyCode:0, key:"", shortcut:"" };
     static #dragdrop = { armed:false, active:false, control:null, parent:null, target:null, srcX:0, srcY:0, startX:0, startY:0, offsetX:0, offsetY:0, data:{ text:"", files: null } };

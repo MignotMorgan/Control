@@ -79,6 +79,9 @@ function onMouseMove(e){
     }
     else { transformation.control.Move.on(); }
 
+    if(Core.mouse.middle && Core.focus != null)
+        Core.focus.Mouse.dragMiddle();
+
     let cursor = "default";
     if(transformation.control == null && mousehover.control && mousehover.control.canResize){
         const L = transformation.left, R = transformation.right, T = transformation.top, B = transformation.bottom;
@@ -150,10 +153,34 @@ function onMouseUpRight(e){
     return false;
 };
 
+function onMouseDownMiddle(e){
+    const mousehover = Core.mousehover;
+    if( mousehover.control != null){
+        mousehover.control.onFocus();
+        mousehover.control.Mouse.clickMiddle();
+    }
+    return false;
+}
+
+function onMouseUpMiddle(e){
+    if( Core.focus != null){
+        Core.focus.Mouse.clickMiddleUp();
+    }
+    return false;
+}
+
 function onMouseDown(e){
     const mouse = Core.mouse;
     mouse.down = Date.now();
+    if (e.button === 0) mouse.left = true;
+    if (e.button === 1) mouse.middle = true;
+    if (e.button === 2) mouse.right = true;
 
+    if (e.button === 1){
+        e.preventDefault();
+        onMouseDownMiddle(e);
+        return false;
+    }
     if (e.button === 2) { onMouseDownRight(e); }
     else { onMouseDownLeft(e); }
 }
@@ -162,7 +189,11 @@ function onMouseUp(e){
     const mouse = Core.mouse;
     mouse.up = Date.now();
     mouse.time = mouse.up - mouse.down;
+    if (e.button === 0) mouse.left = false;
+    if (e.button === 1) mouse.middle = false;
+    if (e.button === 2) mouse.right = false;
 
+    if (e.button === 1){ onMouseUpMiddle(e); return false; }
     if (e.button === 2){ onMouseUpRight(e); }
     else { onMouseUpLeft(e); }
 }
