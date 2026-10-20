@@ -29,7 +29,7 @@ export class DrawForm extends Draw {
     drawChildren(){
         super.drawChildren();
         const dnd = Core.dragdrop;
-        if(dnd.control != null)dnd.control.Draw.execute();
+        if(dnd.control !== null)dnd.control.Draw.execute();
     };
 }
 
@@ -79,8 +79,8 @@ export class ResizeForm extends Resize {
             var ratio_height = height / control.Size.height;
 
             var ratio_size = control.Scale.minimumScale( {width:ratio_width, height:ratio_height} );
-            if(transformation.left && ratio_size.width == 1)left = control.Inside.x;
-            if(transformation.top && ratio_size.height == 1)top = control.Inside.y;
+            if(transformation.left && ratio_size.width === 1)left = control.Inside.x;
+            if(transformation.top && ratio_size.height === 1)top = control.Inside.y;
             if(transformation.left || transformation.top)
                 control.Scale.moveToScale(left, top);
             control.Scale.to(ratio_size.width, ratio_size.height);

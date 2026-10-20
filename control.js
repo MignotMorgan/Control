@@ -67,8 +67,8 @@ export class Control {
     onFocus(){
         if( this.canFocus ){ 
             Core.focus = this; 
-            if(this.parent != null){ this.parent.Lineage.firstPosition(this); }
-        } else if( this.parent != null ){
+            if(this.parent !== null){ this.parent.Lineage.firstPosition(this); }
+        } else if( this.parent !== null ){
             this.parent.onFocus();
         }
     }

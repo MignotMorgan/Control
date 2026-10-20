@@ -57,7 +57,7 @@ export class Lineage {
                 children.push(control);
             }
         }
-        if(this.parent != null) this.parent.Lineage.firstPosition(this.control);
+        if(this.parent !== null) this.parent.Lineage.firstPosition(this.control);
     }
     isAncestor(ancestor){
         const control = this.control;

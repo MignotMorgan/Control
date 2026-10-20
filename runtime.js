@@ -46,11 +46,11 @@ function onMouseMove(e){
         if( controls[i].containMouse() )
             controls[i].Mouse.hover();
 
-    if( mousehover.control != mousehover.selected ){
-        if( mousehover.control != null ){
+    if( mousehover.control !== mousehover.selected ){
+        if( mousehover.control !== null ){
             mousehover.control.Mouse.leave();
         }
-        if( mousehover.selected != null ){
+        if( mousehover.selected !== null ){
             mousehover.selected.Mouse.enter();
         }
         mousehover.control = mousehover.selected;
@@ -58,13 +58,13 @@ function onMouseMove(e){
 
     if(dnd.control){ DragDropManager.move(); }
 
-    if(transformation.control == null){
+    if(transformation.control === null){
         transformation.left = false;
         transformation.right = false;
         transformation.top = false;
         transformation.bottom = false;
         
-        if( mousehover.control != null && mousehover.control.canResize ){
+        if( mousehover.control !== null && mousehover.control.canResize ){
             if(mouse.x <= mousehover.control.form.Inside.x + mousehover.control.Absolute.x + transformation.border)transformation.left = true;
             if(mouse.y <= mousehover.control.form.Inside.y + mousehover.control.Absolute.y + transformation.border)transformation.top = true;
             if(mouse.x >= mousehover.control.form.Inside.x + mousehover.control.Absolute.x + mousehover.control.Size.width - transformation.border)transformation.right = true;
@@ -79,11 +79,11 @@ function onMouseMove(e){
     }
     else { transformation.control.Move.on(); }
 
-    if(Core.mouse.middle && Core.focus != null)
+    if(Core.mouse.middle && Core.focus !== null)
         Core.focus.Mouse.dragMiddle();
 
     let cursor = "default";
-    if(transformation.control == null && mousehover.control && mousehover.control.canResize){
+    if(transformation.control === null && mousehover.control && mousehover.control.canResize){
         const L = transformation.left, R = transformation.right, T = transformation.top, B = transformation.bottom;
         if((L && T) || (R && B)) cursor = "nwse-resize";
         else if((R && T) || (L && B)) cursor = "nesw-resize";
@@ -95,7 +95,7 @@ function onMouseMove(e){
 
 function onMouseDownLeft(e){
     const mousehover = Core.mousehover;
-    if( mousehover.control != null){
+    if( mousehover.control !== null){
         mousehover.control.onFocus();
         if(mousehover.control.canDrag){
             DragDropManager.start();
@@ -123,7 +123,7 @@ function onMouseUpLeft(e){
     else if(dnd.active && dnd.control){
         DragDropManager.dropControl();
     }
-    else if(mousehover.control != null){
+    else if(mousehover.control !== null){
         mousehover.control.Mouse.clickLeftUp();
     }
 
@@ -132,7 +132,7 @@ function onMouseUpLeft(e){
 
 function onMouseDownRight(e){
     const mousehover = Core.mousehover;
-    if( mousehover.control != null){
+    if( mousehover.control !== null){
         mousehover.control.onFocus();
         mousehover.control.Transformation.on();
         mousehover.control.Mouse.clickRight();
@@ -146,7 +146,7 @@ function onMouseUpRight(e){
     const mousehover = Core.mousehover;
     mouse.time = mouse.up - mouse.down;
 
-    if( mousehover.control != null){
+    if( mousehover.control !== null){
         mousehover.control.Mouse.clickRightUp();
     }
     onClear();
@@ -155,7 +155,7 @@ function onMouseUpRight(e){
 
 function onMouseDownMiddle(e){
     const mousehover = Core.mousehover;
-    if( mousehover.control != null){
+    if( mousehover.control !== null){
         mousehover.control.onFocus();
         mousehover.control.Mouse.clickMiddle();
     }
@@ -163,7 +163,7 @@ function onMouseDownMiddle(e){
 }
 
 function onMouseUpMiddle(e){
-    if( Core.focus != null){
+    if( Core.focus !== null){
         Core.focus.Mouse.clickMiddleUp();
     }
     return false;
