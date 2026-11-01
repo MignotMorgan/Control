@@ -62,15 +62,20 @@ export class ResizeForm extends Resize {
         const mouse = Core.mouse;
         const transformation = Core.transformation;
         const control = this.control;
+        const border = control.Border;
         var left = control.Inside.x;
         var top = control.Inside.y;
         var right = control.Inside.x + control.Size.width;
         var bottom = control.Inside.y + control.Size.height;
 
-        if( transformation.left )left = mouse.x;
-        if( transformation.top )top = mouse.y;
-        if( transformation.right )right = mouse.x;
-        if( transformation.bottom )bottom = mouse.y;
+        // Même minimum que Resize.on : une fenêtre trop petite ne pourrait plus être saisie.
+        const minsizeWidth = Math.max(border.left + border.right + 1, transformation.border * 2);
+        const minsizeHeight = Math.max(border.top + border.bottom + 1, transformation.border * 2);
+
+        if( transformation.left )left = Math.min(mouse.x, right - minsizeWidth);
+        if( transformation.top )top = Math.min(mouse.y, bottom - minsizeHeight);
+        if( transformation.right )right = Math.max(mouse.x, left + minsizeWidth);
+        if( transformation.bottom )bottom = Math.max(mouse.y, top + minsizeHeight);
 
         if(control.canScale){
             var width = right - left;
