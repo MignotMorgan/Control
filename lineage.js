@@ -40,12 +40,17 @@ export class Lineage {
     }
     changedParent(){
         this.form = this.Parent.Lineage.form;
+        for(let i = 0; i < this.children.length; i++){
+            this.children[i].Lineage.form = this.form;
+            this.children[i].Lineage.changedParent();
+        }
         this.control.Move.parentMove();
         let children = this.children;
         if(children && children.length)
             for(let i = 0; i < children.length; i++)
                 children[i].Move.parentMove();
     }
+
     firstPosition(control){
         if(!control) return;
         const children = this.children;
