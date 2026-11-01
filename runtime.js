@@ -46,8 +46,10 @@ function onMouseMove(e){
 
     mousehover.selected = null;
     for(let i = controls.length - 1; i >= 0; i--)
-        if( controls[i].containMouse() )
+        if( controls[i].containMouse() ){
             controls[i].Mouse.hover();
+            break;
+        }
 
     if( mousehover.control !== mousehover.selected ){
         if( mousehover.control !== null ){
