@@ -3,12 +3,15 @@ import { DragDropManager } from './dragdropmanager.js';
 
 function cjsLoop(){
     const controls = Core.controls;
-    for(let i = 0; i < controls.length; i++){
-        controls[i].Paint.clear();
-        controls[i].update();
-        controls[i].onDraw(undefined);
+    try{
+        for(let i = 0; i < controls.length; i++){
+            controls[i].Paint.clear();
+            controls[i].update();
+            controls[i].onDraw(undefined);
+        }
+    } finally {
+        queueNewFrame();
     }
-    queueNewFrame();
 }
 
 let cjs_loop = -1;
